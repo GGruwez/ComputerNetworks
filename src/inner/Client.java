@@ -1,0 +1,403 @@
+package inner;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.List;
+
+import exceptions.UnknownHTTPVersionException;
+import exceptions.UnknownRequestException;
+
+public class Client {
+
+		public Client(URI URL, int port) throws URISyntaxException, UnknownHostException, IOException{
+			
+			Socket clientSocket = new Socket(URL.getHost(),port);
+
+			// Writer
+            PrintStream serverInput = new PrintStream(clientSocket.getOutputStream(),true);
+            // Reader
+            BufferedReader serverOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		
+            this.socket = clientSocket;
+            this.socketWriter = serverInput;
+            this.socketReader = serverOutput;
+            this.host = convertToReadableURL(URL).getHost();
+		}
+		
+		public Client(String URL, String port) throws URISyntaxException, UnknownHostException, IOException{
+			
+			String host = getHostFromURL(URL);
+			int portInt = Integer.parseInt(port);
+			
+			Socket clientSocket = new Socket(host, portInt);
+
+			// Writer
+            PrintStream serverInput = new PrintStream(clientSocket.getOutputStream(),true);
+            // Reader
+            BufferedReader serverOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		
+            this.socket = clientSocket;
+            this.socketWriter = serverInput;
+            this.socketReader = serverOutput;
+            this.host = new URI(convertToReadableURL(URL)).getHost();
+		}
+		
+		public void close() throws IOException{
+			if (!getSocket().isClosed()){
+				getSocket().close();
+			}
+		}
+		
+		/*
+		 * GETTERS
+		 */
+		
+		private Socket getSocket(){
+			return this.socket;
+		}
+		
+		private PrintStream getSocketWriter(){
+			return this.socketWriter;
+		}
+		
+		private BufferedReader getSocketReader(){
+			return this.socketReader;
+		}
+		
+		public String getHost(){
+			return this.host;
+		}
+		
+		/*
+		 * HELP METHODS
+		 */
+		
+		public static String getHostFromURL(String URL) throws URISyntaxException{
+			String host = convertToReadableURL(URL);
+			host = new URI(host).getHost();
+			return host;
+		}
+		
+		public static String convertToReadableURL(String URL){
+			if (URL.contains("http://")){
+				return URL;
+			}else{
+				return "http://" + URL;
+			}
+		}
+		
+		public static URI convertToReadableURL(URI URL) throws URISyntaxException{
+			String URLString = URL.toString();
+			return new URI(convertToReadableURL(URLString));
+		}
+		
+		/*
+		 * REQUEST METHODS
+		 */
+		
+		public void execute(Request request) throws UnknownRequestException, IOException, UnknownHTTPVersionException{
+			if (request.getRequestType() == RequestType.GET){
+				executeGet(request);
+			}else if (request.getRequestType() == RequestType.HEAD){
+				executeHead(request);
+			}else if (request.getRequestType() == RequestType.POST){
+				executePost(request);
+			}else{
+				throw new UnknownRequestException();
+			}
+		}
+		
+		/**
+		 * Method for the execution of a GET request
+		 * @param request
+		 * @throws IOException
+		 * @throws UnknownHTTPVersionException
+		 */
+		private void executeGet(Request request) throws IOException, UnknownHTTPVersionException{
+			
+			// Check whether or not this is a GET request
+			if (request.getRequestType() != RequestType.GET){
+				throw new IOException("This is not a GET request");
+			}
+			
+			BufferedReader reader = getSocketReader();
+			
+			String fileName = "GET" + getHost() + request.getPath();
+			fileName = fileName.replace('.', '_').replace('/', '_');
+			
+			if (request.getVersion() == HTTPVersion.HTTP_1_1){
+				// Execute as an HTTP/1.1 request
+
+				// Send request
+				sendHTTP_1_1Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+		        
+			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
+				// Execute as an HTTP/1.0 request
+				
+				// Send request
+				sendHTTP_1_0Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_0(fileName);
+		        
+			}else{
+				throw new UnknownHTTPVersionException();
+			}
+			
+			
+	        
+		}
+		
+		private void executeHead(Request request) throws IOException, UnknownHTTPVersionException{
+			
+			// Check whether or not this is a HEAD request
+			if (request.getRequestType() != RequestType.HEAD){
+				throw new IOException("This is not a HEAD request");
+			}
+			
+			BufferedReader reader = getSocketReader();
+			String fileName = "GET" + getHost() + request.getPath();
+			fileName = fileName.replace('.', '_').replace('/', '_');
+			
+			if (request.getVersion() == HTTPVersion.HTTP_1_1){
+				// Execute as an HTTP/1.1 request
+
+				// Send request
+				sendHTTP_1_1Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+		        
+			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
+				// Execute as an HTTP/1.0 request
+				
+				// Send request
+				sendHTTP_1_0Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_0(fileName);
+		        
+			}else{
+				throw new UnknownHTTPVersionException();
+			}
+			
+			
+	        
+		}
+		
+		private void executePost(Request request) throws IOException, UnknownHTTPVersionException{
+			
+			// Check whether or not this is a POST request
+			if (request.getRequestType() != RequestType.POST){
+				throw new IOException("This is not a POST request");
+			}
+			
+			BufferedReader reader = getSocketReader();
+			String fileName = "GET" + getHost() + request.getPath();
+			fileName = fileName.replace('.', '_').replace('/', '_');
+			
+			if (request.getVersion() == HTTPVersion.HTTP_1_1){
+				// Execute as an HTTP/1.1 request
+
+				// Send request
+				sendHTTP_1_1Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+		        
+			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
+				// Execute as an HTTP/1.0 request
+				
+				// Send request
+				sendHTTP_1_0Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_0(fileName);
+		        
+			}else{
+				throw new UnknownHTTPVersionException();
+			}
+			
+	        
+		}
+		
+		private void executePut(Request request) throws IOException, UnknownHTTPVersionException{
+			
+			// Check whether or not this is a PUT request
+			if (request.getRequestType() != RequestType.PUT){
+				throw new IOException("This is not a PUT request");
+			}
+			
+			BufferedReader reader = getSocketReader();
+			String fileName = "GET" + getHost() + request.getPath();
+			fileName = fileName.replace('.', '_').replace('/', '_');
+			
+			if (request.getVersion() == HTTPVersion.HTTP_1_1){
+				// Execute as an HTTP/1.1 request
+
+				// Send request
+				sendHTTP_1_1Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+		        
+			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
+				// Execute as an HTTP/1.0 request
+				
+				// Send request
+				sendHTTP_1_0Request(request);
+				
+				// Print and store server output
+				displayAndStoreResponseHTTP_1_0(fileName);
+		        
+			}else{
+				throw new UnknownHTTPVersionException();
+			}
+			
+	        
+		}
+		
+		/**
+		 * Crude method for sending HTTP/1.1 requests to a server.
+		 * Assumes a correctly formed request.
+		 * @throws IOException 
+		 */
+		private void sendHTTP_1_1Request(Request request) throws IOException{
+			
+			if (request.getVersion() != HTTPVersion.HTTP_1_1){
+				throw new IOException("This is not an HTTP/1.1 request");
+			}
+			String path = request.getPath();
+			String requestType = request.getRequestType().toString();
+			String version = request.getVersion().toString();
+			
+			String host = getHost();
+			
+			PrintStream writer = getSocketWriter();
+			
+			String commandLine1 = requestType + " " + path + " " + version;
+			String commandLine2 = "Host: " + host;
+	        writer.println(commandLine1);
+	        writer.println(commandLine2);
+	        writer.println();
+	        writer.flush();
+			
+		}
+		
+		/**
+		 * Crude method for sending HTTP/1.0 requests to a server.
+		 * Assumes a correctly formed request.
+		 * @throws IOException 
+		 */
+		private void sendHTTP_1_0Request(Request request) throws IOException{
+			
+			if (request.getVersion() != HTTPVersion.HTTP_1_0){
+				throw new IOException("This is not an HTTP/1.0 request");
+			}
+			
+			String path = request.getPath();
+			String requestType = request.getRequestType().toString();
+			String version = request.getVersion().toString();
+			
+			String host = getHost();
+			
+			PrintStream writer = getSocketWriter();
+			
+			String commandLine1 = requestType + " http://" + host + path + " " + version;
+	        writer.println(commandLine1);
+	        writer.println();
+	        writer.flush();
+			
+		}
+		
+		private void displayAndStoreResponseHTTP_1_0(String fileName) throws IOException{
+			BufferedReader reader = getSocketReader();
+			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(DOWNLOAD_DESTINATION, fileName)));
+			
+	        String output;
+	        while((output = reader.readLine()) != null){
+	        	// Print server output
+	        	System.out.println(output);
+	        	
+	        	// Parse for images
+	        	
+	        	
+	        	
+	        	// Store server output
+		        writer.write(output);
+	        }
+	        reader.close();
+	        writer.close();
+	        
+		}
+		
+		private void displayAndStoreResponseHTTP_1_1(String fileName, RequestType requestType) throws IOException{
+			BufferedReader reader = getSocketReader();
+			
+	        String output = "";
+	        
+	        String extension = "html";
+	        Boolean extensionFound = false;
+	        Boolean startDisplaying = true;
+	        Boolean startStoring = !(requestType == RequestType.GET);
+	        
+	        
+	        while (true) {	
+	        	final String line = reader.readLine();
+	        	
+	        	// Print server output
+	        	if (startDisplaying)System.out.println(line);
+	        	
+	        	// Store server output
+	        	if (startStoring)output += line;
+	        	
+	        	// Check if the start of the file was reached
+	        	if (!startStoring && line.isEmpty()) startStoring = true;
+	        	
+	        	// Check if the end of the file was reached (we assume every html file ends with a closing HTML tag)
+	        	if (line == null || line.contains("</HTML>") || line.contains("</html>")) break;
+	        	
+	        	// Determine document extension
+	        	if (!extensionFound && line.contains("Content-Type")){
+	        		extension = line.split("/")[line.split("/").length-1];
+	        		extensionFound = true;
+	        	}
+	        	
+	        }
+        	
+	        // Parse for images
+        	List<String> imageURLs = Parser.findImageURLs(output);
+        	for (String imageURL : imageURLs){
+        		System.out.println(imageURL);
+        	}
+        	
+        	
+        	// Store server output
+        	BufferedWriter writer = new BufferedWriter(new FileWriter(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
+	        writer.write(output);
+	        
+	        reader.close();
+	        writer.close();
+	        
+		}
+		
+		private final Socket socket;
+		private final PrintStream socketWriter;
+		private final BufferedReader socketReader;
+		private final String host;
+		
+		private final static String DOWNLOAD_DESTINATION = "./src/clientDownloads";
+		
+}
