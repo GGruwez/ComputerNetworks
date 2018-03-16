@@ -1,16 +1,25 @@
 package inner;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import exceptions.UnknownHTTPVersionException;
@@ -346,47 +355,87 @@ public class Client {
 		private void displayAndStoreResponseHTTP_1_1(String fileName, RequestType requestType) throws IOException{
 			BufferedReader reader = getSocketReader();
 			
-	        String output = "";
+	        //String output = "";
+			List<Byte> output = new ArrayList<Byte>();
 	        
 	        String extension = "html";
 	        Boolean extensionFound = false;
 	        Boolean startDisplaying = true;
 	        Boolean startStoring = !(requestType == RequestType.GET);
 	        
+	        /*
+	        // Writer
+            PrintStream serverInput = new PrintStream(getSocket().getOutputStream(),true);
+            // Reader
+            BufferedInputStream reader = new BufferedInputStream(getSocket().getInputStream());
+            
+            OutputStream writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
+
+            
+    		byte[] b = new byte[1];
+    		int length;
+    		List<Byte> bytes = new ArrayList<Byte>();
+
+    		while ((length = reader.read(b)) != -1) {
+    			writer.write(b, 0, length);
+    			String string = new String(b);
+    			System.out.println(string);
+    		}
+	        */
+	        
+	        OutputStream writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
+	        BufferedInputStream byteReader = new BufferedInputStream(getSocket().getInputStream());
 	        
 	        while (true) {	
+	        	//final String line = reader.readLine();
 	        	final String line = reader.readLine();
+	        	byte[] byteLine = new byte[]
 	        	
 	        	// Print server output
 	        	if (startDisplaying)System.out.println(line);
 	        	
-	        	// Store server output
-	        	if (startStoring)output += line;
-	        	
-	        	// Check if the start of the file was reached
-	        	if (!startStoring && line.isEmpty()) startStoring = true;
-	        	
 	        	// Check if the end of the file was reached (we assume every html file ends with a closing HTML tag)
-	        	if (line == null || line.contains("</HTML>") || line.contains("</html>")) break;
+	        	if (line == null || || line.contains("</HTML>") || line.contains("</html>")) break;
+	        	
+	        	// Store server output
+	        	//if (startStoring)output += line;
+	        	byte[] byteArray = line.getBytes();
+	        	if (startStoring){
+	        		for (byte b : byteArray){
+	        			output.add(b);
+	        			
+	        		}
+	        		writer.write(byteArray, 0, byteArray.length);
+	        		System.out.println(byteArray.length);
+	        	}
 	        	
 	        	// Determine document extension
 	        	if (!extensionFound && line.contains("Content-Type")){
 	        		extension = line.split("/")[line.split("/").length-1];
 	        		extensionFound = true;
+	        		if (!extension.equals("html"))startDisplaying=false;
+	        		writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
 	        	}
 	        	
+	        	// Check if the start of the file was reached
+	        	if (!startStoring && line.isEmpty()) startStoring = true;
+	        	
 	        }
-        	
+            
+            
+        	/*
 	        // Parse for images
         	List<String> imageURLs = Parser.findImageURLs(output);
         	for (String imageURL : imageURLs){
         		System.out.println(imageURL);
         	}
+        	*/
         	
-        	
+        	/*
         	// Store server output
         	BufferedWriter writer = new BufferedWriter(new FileWriter(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
 	        writer.write(output);
+	        */
 	        
 	        reader.close();
 	        writer.close();
