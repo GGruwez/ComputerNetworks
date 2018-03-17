@@ -14,7 +14,6 @@ public class Server implements Runnable {
 	
     public int          portNumber   = 1000;
     public ServerSocket serverSocket = null;
-    public boolean      isStopped    = false;
     public Thread       runningThread= null;
 
 	
