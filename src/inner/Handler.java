@@ -19,6 +19,12 @@ public class Handler implements Runnable {
 			//output to client
             DataOutputStream out = new DataOutputStream
                     (socket.getOutputStream());
+            
+            String inputLine, outputLine;
+            
+            inputLine = in.readLine();
+            
+            
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
