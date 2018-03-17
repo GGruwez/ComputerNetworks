@@ -1,7 +1,11 @@
 package inner;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -12,13 +16,13 @@ public class Parser {
 		
 	}
 	
-	public static List<String> findImageURLs(String string){
+	public static List<String> findImageURLs(File file, String baseURL) throws IOException{
 		List<String> imageURLs = new ArrayList<String>();
 		
-		Document doc = new Document(string);
+		Document doc = Jsoup.parse(file, "UTF-8", baseURL);
 		Elements images = doc.getElementsByTag("img");
 		for (Element image : images){
-			String url = image.attr("abs:src");
+			String url = image.absUrl("src");
 			imageURLs.add(url);
 		}
 		

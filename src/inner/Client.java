@@ -151,7 +151,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
+				displayAndStoreResponse(fileName, RequestType.GET, false, "http://" + getHost() + request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -188,7 +188,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
+				displayAndStoreResponse(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -225,7 +225,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
+				displayAndStoreResponse(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -261,7 +261,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
+				displayAndStoreResponse(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -353,143 +353,72 @@ public class Client {
 	        
 		}
 		
-		private void displayAndStoreResponseHTTP_1_1(String fileName, RequestType requestType, Boolean storeOnly, String path) throws IOException{
-			//BufferedReader reader = getSocketReader();
-			
-	        //String output = "";
-			List<Byte> output = new ArrayList<Byte>();
+		/**
+		 * Method that displays and stores the HTTP response.
+		 * Returns a list of all the image urls in the HTML file that was retrieved. 
+		 * Returns an empty list if no image tags were found OR if the retrieved file was not an HTML file. 
+		 * @param fileName
+		 * @param requestType
+		 * @param storeOnly
+		 * @param path
+		 * @return
+		 * @throws IOException
+		 */
+		private List<String> displayAndStoreResponse(String fileName, RequestType requestType, Boolean storeOnly, String URL) throws IOException{
 	        
 	        String extension = "html";
-	        Boolean startStoring = !(requestType == RequestType.GET);
 	        
-	        if (path.split("\\.").length > 1){
-	        	extension = path.split("\\.")[path.split("\\.").length-1];
+	        // Extract the base URL that will be passed to the parser for creating absolute image addresses
+	        String baseURL = URL.substring(0,URL.lastIndexOf("/"));
+	        
+	        // Extract the extension of the requested file
+	        URL = URL.split("/")[URL.split("/").length-1];
+	        if (URL.split("\\.").length > 1){
+	        	extension = URL.split("\\.")[URL.split("\\.").length-1];
 	        }
 	        
-	        /*
-	        // Writer
-            PrintStream serverInput = new PrintStream(getSocket().getOutputStream(),true);
-            // Reader
-            BufferedInputStream reader = new BufferedInputStream(getSocket().getInputStream());
-            
-            OutputStream writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
-
-            
-    		byte[] b = new byte[1];
-    		int length;
-    		List<Byte> bytes = new ArrayList<Byte>();
-
-    		while ((length = reader.read(b)) != -1) {
-    			writer.write(b, 0, length);
-    			String string = new String(b);
-    			System.out.println(string);
-    		}
-	        */
-	        
+	        // Create reader and writer
 	        DataOutputStream writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
 	        BufferedInputStream reader = new BufferedInputStream(getSocket().getInputStream());
 	        
-	        /*
-	        while (true) {	
-	        	//final String line = reader.readLine();
-	        	final String line = reader.readLine();
-	        	
-	        	// Print server output
-	        	if (!storeOnly)System.out.println(line);
-	        	
-	        	// Check if the end of the file was reached (we assume every html file ends with a closing HTML tag)
-	        	if (line == null || line.contains("</HTML>") || line.contains("</html>")) break;
-	        	
-	        	// Store server output
-	        	//if (startStoring)output += line;
-	        	byte[] byteArray = line.getBytes();
-	        	if (startStoring){
-	        		for (byte b : byteArray){
-	        			output.add(b);
-	        			
-	        		}
-	        		writer.write(byteArray, 0, byteArray.length);
-	        		System.out.println(byteArray.length);
-	        	}
-	        	
-	        	// Determine document extension
-	        	if (!extensionFound && line.contains("Content-Type")){
-	        		extension = line.split("/")[line.split("/").length-1];
-	        		extensionFound = true;
-	        		if (!extension.equals("html"))storeOnly=true;
-	        		writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
-	        	}
-	        	
-	        	// Check if the end of the header was reached
-	        	if (!startStoring && line.isEmpty()) startStoring = true;
-	        	
-	        }
-	        */
-	        
-	        /*
-	        Boolean done = false;
+	        byte[] bytes = new byte[2048];
 	        Boolean headerFound = false;
-	        String line;
-	        while ((line = reader.readLine()) != null && !line.contains("</HTML>") && !line.contains("</html>")){
+	        int offset, length;
+	        while ((length = reader.read(bytes)) != -1){
+
+		        offset = 0;
+	        	String line = new String(bytes, 0, length);
 	        	
-	        	byte[] byteArray = line.getBytes();
-	        	writer.write(byteArray, 0, byteArray.length);
-	        	
-	        	System.out.println(line);
-	        	
-	        	if (line.isEmpty()) {
-	        		System.out.println("--------------------------------------");
-	        		writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
-	        		headerFound = true;
-	        		break;
-	        	}
-	        }
-	        
-	        char[] charLine = new char[1];
-	        while (headerFound && reader.read(charLine) != -1){
-	        	
-	        	System.out.print(charLine);
-	        	String charToString = new String(charLine);
-	        	
-	        	
-	        	byte[] charByteArray = charToString.getBytes();
-	        	writer.write(charByteArray, 0, charByteArray.length);
-	        	writer.flush();
-	        }
-	        */
-	        
-	        byte[] bytes = new byte[1024];
-	        Boolean headerFound = false;
-	        while (reader.read(bytes) != -1){
-	        	
-	        	String line = new String(bytes);
-	        	
+
 	        	if (!storeOnly)System.out.print(line);
 	        	
-	        	if (!headerFound && line.indexOf("\r\n\r\n") != -1){
+	        	if (!headerFound && (offset = line.indexOf("\r\n\r\n")) != -1){
 	        		headerFound = true;
-	        		
+	        		length = length - offset - 4;
+	        		offset = offset + 4;
+	        		writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
 	        	};
+	        	
+	        	writer.write(bytes, offset, length);
+                writer.flush();
+	        	
 	        	
 	        }
             
-            
-        	/*
-	        // Parse for images
-        	List<String> imageURLs = Parser.findImageURLs(output);
-        	for (String imageURL : imageURLs){
-        		System.out.println(imageURL);
-        	}
-        	*/
+	        // Parse for images if this is an html file
+	        List<String> imageURLs = new ArrayList<String>();
+	        if (extension.equals("html") || extension.equals("HTML")){
+	        	imageURLs = Parser.findImageURLs(new File(DOWNLOAD_DESTINATION, fileName + "." + extension), baseURL);
+	        	for (String imageURL : imageURLs){
+	        		System.out.println(imageURL);
+	        	}
+	        }
         	
-        	/*
-        	// Store server output
-        	BufferedWriter writer = new BufferedWriter(new FileWriter(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
-	        writer.write(output);
-	        */
 	        
 	        reader.close();
 	        writer.close();
+	        
+	        return imageURLs;
 	        
 		}
 		
