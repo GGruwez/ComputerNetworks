@@ -3,10 +3,9 @@ import inner.*;
 
 public class ServerMain {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		Server server = new Server();
 	}
 	
-	public static Server server;
 	
 }
