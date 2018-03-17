@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -150,7 +151,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -187,7 +188,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -224,7 +225,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -260,7 +261,7 @@ public class Client {
 				sendHTTP_1_1Request(request);
 				
 				// Print and store server output
-				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET);
+				displayAndStoreResponseHTTP_1_1(fileName, RequestType.GET, true, request.getPath());
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
@@ -352,16 +353,18 @@ public class Client {
 	        
 		}
 		
-		private void displayAndStoreResponseHTTP_1_1(String fileName, RequestType requestType) throws IOException{
-			BufferedReader reader = getSocketReader();
+		private void displayAndStoreResponseHTTP_1_1(String fileName, RequestType requestType, Boolean storeOnly, String path) throws IOException{
+			//BufferedReader reader = getSocketReader();
 			
 	        //String output = "";
 			List<Byte> output = new ArrayList<Byte>();
 	        
 	        String extension = "html";
-	        Boolean extensionFound = false;
-	        Boolean startDisplaying = true;
 	        Boolean startStoring = !(requestType == RequestType.GET);
+	        
+	        if (path.split("\\.").length > 1){
+	        	extension = path.split("\\.")[path.split("\\.").length-1];
+	        }
 	        
 	        /*
 	        // Writer
@@ -383,19 +386,19 @@ public class Client {
     		}
 	        */
 	        
-	        OutputStream writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
-	        BufferedInputStream byteReader = new BufferedInputStream(getSocket().getInputStream());
+	        DataOutputStream writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
+	        BufferedInputStream reader = new BufferedInputStream(getSocket().getInputStream());
 	        
+	        /*
 	        while (true) {	
 	        	//final String line = reader.readLine();
 	        	final String line = reader.readLine();
-	        	byte[] byteLine = new byte[]
 	        	
 	        	// Print server output
-	        	if (startDisplaying)System.out.println(line);
+	        	if (!storeOnly)System.out.println(line);
 	        	
 	        	// Check if the end of the file was reached (we assume every html file ends with a closing HTML tag)
-	        	if (line == null || || line.contains("</HTML>") || line.contains("</html>")) break;
+	        	if (line == null || line.contains("</HTML>") || line.contains("</html>")) break;
 	        	
 	        	// Store server output
 	        	//if (startStoring)output += line;
@@ -413,12 +416,60 @@ public class Client {
 	        	if (!extensionFound && line.contains("Content-Type")){
 	        		extension = line.split("/")[line.split("/").length-1];
 	        		extensionFound = true;
-	        		if (!extension.equals("html"))startDisplaying=false;
+	        		if (!extension.equals("html"))storeOnly=true;
 	        		writer = new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension));
 	        	}
 	        	
-	        	// Check if the start of the file was reached
+	        	// Check if the end of the header was reached
 	        	if (!startStoring && line.isEmpty()) startStoring = true;
+	        	
+	        }
+	        */
+	        
+	        /*
+	        Boolean done = false;
+	        Boolean headerFound = false;
+	        String line;
+	        while ((line = reader.readLine()) != null && !line.contains("</HTML>") && !line.contains("</html>")){
+	        	
+	        	byte[] byteArray = line.getBytes();
+	        	writer.write(byteArray, 0, byteArray.length);
+	        	
+	        	System.out.println(line);
+	        	
+	        	if (line.isEmpty()) {
+	        		System.out.println("--------------------------------------");
+	        		writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
+	        		headerFound = true;
+	        		break;
+	        	}
+	        }
+	        
+	        char[] charLine = new char[1];
+	        while (headerFound && reader.read(charLine) != -1){
+	        	
+	        	System.out.print(charLine);
+	        	String charToString = new String(charLine);
+	        	
+	        	
+	        	byte[] charByteArray = charToString.getBytes();
+	        	writer.write(charByteArray, 0, charByteArray.length);
+	        	writer.flush();
+	        }
+	        */
+	        
+	        byte[] bytes = new byte[1024];
+	        Boolean headerFound = false;
+	        while (reader.read(bytes) != -1){
+	        	
+	        	String line = new String(bytes);
+	        	
+	        	if (!storeOnly)System.out.print(line);
+	        	
+	        	if (!headerFound && line.indexOf("\r\n\r\n") != -1){
+	        		headerFound = true;
+	        		
+	        	};
 	        	
 	        }
             
