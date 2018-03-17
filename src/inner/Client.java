@@ -28,21 +28,39 @@ import exceptions.UnknownRequestException;
 
 public class Client {
 
+		/**
+		 * Constructs a client object with given URL and port.
+		 * @param URL
+		 * @param port
+		 * @throws URISyntaxException
+		 * @throws UnknownHostException
+		 * @throws IOException
+		 */
 		public Client(URI URL, int port) throws URISyntaxException, UnknownHostException, IOException{
 			
+			//create socket for this client
 			Socket clientSocket = new Socket(URL.getHost(),port);
 
 			// Writer
             PrintStream serverInput = new PrintStream(clientSocket.getOutputStream(),true);
             // Reader
             BufferedReader serverOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		
+            
+            //initialize client's fields
             this.socket = clientSocket;
             this.socketWriter = serverInput;
             this.socketReader = serverOutput;
             this.host = convertToReadableURL(URL).getHost();
 		}
 		
+		/**
+		 * Constructs a client object.
+		 * @param URL
+		 * @param port
+		 * @throws URISyntaxException
+		 * @throws UnknownHostException
+		 * @throws IOException
+		 */
 		public Client(String URL, String port) throws URISyntaxException, UnknownHostException, IOException{
 			
 			String host = getHostFromURL(URL);
@@ -61,6 +79,11 @@ public class Client {
             this.host = new URI(convertToReadableURL(URL)).getHost();
 		}
 		
+		/**
+		 * Closes client socket.
+		 * 
+		 * @throws IOException
+		 */
 		public void close() throws IOException{
 			if (!getSocket().isClosed()){
 				getSocket().close();
@@ -170,6 +193,12 @@ public class Client {
 	        
 		}
 		
+		/**
+		 * Executes HEAD request // HEAD = GET without actual body message.
+		 * @param request
+		 * @throws IOException
+		 * @throws UnknownHTTPVersionException
+		 */
 		private void executeHead(Request request) throws IOException, UnknownHTTPVersionException{
 			
 			// Check whether or not this is a HEAD request
@@ -332,6 +361,11 @@ public class Client {
 			
 		}
 		
+		/**
+		 * Writes output
+		 * @param fileName
+		 * @throws IOException
+		 */
 		private void displayAndStoreResponseHTTP_1_0(String fileName) throws IOException{
 			BufferedReader reader = getSocketReader();
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(DOWNLOAD_DESTINATION, fileName)));
@@ -360,7 +394,7 @@ public class Client {
 		 * @param fileName
 		 * @param requestType
 		 * @param storeOnly
-		 * @param path
+		 * @param 
 		 * @return
 		 * @throws IOException
 		 */

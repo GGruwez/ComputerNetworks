@@ -18,6 +18,12 @@ public class ClientMain {
 		Request request = new Request(args[0], args[1], args[2], args[3]);
 		
 		client.execute(request);
+		
+		/*
+		 * After delivering the response, the server closes the connection (making HTTP a stateless protocol, 
+		 * i.e. not maintaining any connection information between transactions).
+		 */
+		
 		client.close();
 		
 		/*
