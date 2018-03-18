@@ -1,5 +1,10 @@
 package inner;
 
+/**
+ * An enumeration for both HTTP versions.
+ * @author anthonyrathe
+ *
+ */
 public enum HTTPVersion {
 	HTTP_1_1, HTTP_1_0;
 	

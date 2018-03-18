@@ -8,8 +8,23 @@ import java.util.List;
 import exceptions.UnknownHTTPVersionException;
 import exceptions.UnknownRequestException;
 
+/**
+ * Class for constructing proper requests.
+ * @author anthonyrathe
+ *
+ */
 public class Request {
 
+		/** 
+		 * Constructor for requests of any of the four supported types.
+		 * @param typeString
+		 * @param path
+		 * @param portString
+		 * @param versionString
+		 * @throws UnknownRequestException
+		 * @throws UnknownHTTPVersionException
+		 * @throws URISyntaxException
+		 */
 		public Request(String typeString, String path, String portString, String versionString) throws UnknownRequestException, UnknownHTTPVersionException, URISyntaxException{
 			path = new URI(Client.convertToReadableURL(path)).getPath();
 			if (path.length() == 0){
@@ -23,6 +38,14 @@ public class Request {
 			setContent(content);
 		}
 		
+		/**
+		 * Constructor for requests of any of the four supported types.
+		 * @param type
+		 * @param path
+		 * @param port
+		 * @param version
+		 * @throws URISyntaxException
+		 */
 		public Request(RequestType type, String path, int port, HTTPVersion version) throws URISyntaxException{
 			path = new URI(Client.convertToReadableURL(path)).getPath();
 			if (path.length() == 0){
@@ -35,6 +58,10 @@ public class Request {
 			List<String> content = new ArrayList<String>();
 			setContent(content);
 		}
+		
+		/*
+		 * GETTERS AND SETTERS
+		 */
 		
 		public RequestType getRequestType(){
 			return this.type;
@@ -61,10 +88,24 @@ public class Request {
 			if (canHaveContent())this.content = content;
 		}
 		
+		/*
+		 * METHODS
+		 */
+		
+		/**
+		 * Method that returns whether or not the request requires a message body.
+		 * @return
+		 */
 		private Boolean canHaveContent(){
 			return (getRequestType() == RequestType.POST || getRequestType() == RequestType.PUT);
 		}
 		
+		/**
+		 * Static method for converting a string to a RequestType.
+		 * @param typeString
+		 * @return
+		 * @throws UnknownRequestException
+		 */
 		private static RequestType extractType(String typeString) throws UnknownRequestException{
 			
 			if (typeString.equals("HEAD")){
@@ -80,6 +121,12 @@ public class Request {
 			}
 		}
 		
+		/**
+		 * Static method for converting a string to a HTTPVersion
+		 * @param versionString
+		 * @return
+		 * @throws UnknownHTTPVersionException
+		 */
 		private static HTTPVersion extractVersion(String versionString) throws UnknownHTTPVersionException{
 			if (versionString.equals("HTTP/1.0")){
 				return HTTPVersion.HTTP_1_0;
@@ -89,6 +136,10 @@ public class Request {
 				throw new UnknownHTTPVersionException(versionString);
 			}
 		}
+		
+		/*
+		 * VARIABLES
+		 */
 		
 		private final String path;
 		private final HTTPVersion version;

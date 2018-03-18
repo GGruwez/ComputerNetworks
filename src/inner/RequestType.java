@@ -1,5 +1,10 @@
 package inner;
 
+/**
+ * An enumeration for all four request types.
+ * @author anthonyrathe
+ *
+ */
 public enum RequestType {
 	HEAD, GET, PUT, POST;
 	

@@ -1,5 +1,10 @@
 package exceptions;
 
+/**
+ * Exception thrown when a string couldn't be associated with a supported RequestType
+ * @author anthonyrathe
+ *
+ */
 public class UnknownRequestException extends Exception{
 	
 	public UnknownRequestException(String typeString){
