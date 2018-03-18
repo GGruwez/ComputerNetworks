@@ -5,12 +5,11 @@ import java.util.concurrent.*;
 import java.io.*;
 
 
-public class Server implements Runnable {
+public class Server {
 	
 	//fields
     private int portNumber = 1997;
     private ServerSocket serverSocket;
-    private Thread runningThread;
     private boolean isClosed = false;
     private ExecutorService threadPool;
 
@@ -21,11 +20,12 @@ public class Server implements Runnable {
 		this.portNumber = port;	
 	}
 	
-	
-	@Override
-	public void run(){
+	/**
+	 * start server..
+	 */
+	public void start(){
 		
-		
+		//create threadpool
 		//cached threadpool heeft betere performance want reuses threads wanneer idle voor 60s
         this.threadPool = Executors.newCachedThreadPool();
         
@@ -37,7 +37,7 @@ public class Server implements Runnable {
         }
 		
 		
-		//accept incoming connections, create a processing object and submit to threadpool!
+		//accept incoming connections, create busyClient for every connection and submit to threadpool!
 		while(!isClosed){
 			try{
 				Socket clientSocket = serverSocket.accept();

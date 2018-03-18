@@ -28,7 +28,9 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		
 		//initialize connection
 		try {
+			//reader
 			this.input = new BufferedInputStream(this.socket.getInputStream());
+			//writer
 			this.output = new DataOutputStream(this.socket.getOutputStream());	
 			
 		} catch (IOException e) {
@@ -36,7 +38,7 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 			e.printStackTrace();
 		} 
 		
-		//activate requestHandler - hoe output in writer steken?
+		//activate requestHandler - hoe hier precies de handler implementeren, requesthandler in deze class implementeren?
 		while(!isStopped){
 			try {
 				new RequestHandler(this);

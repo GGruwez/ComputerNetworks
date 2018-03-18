@@ -33,36 +33,41 @@ public class RequestHandler implements Runnable {
 		}
 		
 		if (this.stringRequest.contains("GET")) {
-			handleGET();
+			executeGET();
 		}
 		else if (this.stringRequest.contains("HEAD")) {
-			handleHEAD();
+			executeHEAD();
 		}
 		else if (this.stringRequest.contains("PUT")) {
-			handlePUT();
+			executePUT();
 		}
 		else if (this.stringRequest.contains("POST")) {
-			handlePOST();
+			executePOST();
 		}
 		else {
 			this.code = 400;
 		}
 	}
 
-	private void handleGET(){
+	private void executeGET(){
 		
 	}
 	
-	private void handleHEAD(){
+	private void executeHEAD(){
 		
 	}
 	
-	private void handlePUT(){
+	private void executePUT(){
 		
 	}
 	
-	private void handlePOST(){
+	private void executePOST(){
 		
+	}
+	
+	private String makeHeader(){
+		String header = " ";
+		return header;
 	}
 	
 	
