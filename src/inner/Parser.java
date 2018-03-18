@@ -29,5 +29,47 @@ public class Parser {
 		return imageURLs;
 	}
 	
+	/**
+	 * Method that checks if an absolute address is local to a given host
+	 * @param address
+	 * @param host
+	 * @return
+	 */
+	public static Boolean isLocalAddress(String address, String host){
+		return address.contains(host);
+	}
+	
+	/**
+	 * Extract the host address from a URL of the form 
+	 * http://www.host.com/........
+	 * @param url
+	 * @return
+	 */
+	public static String getHost(String url){
+		String resultString = url.substring(7);
+		return resultString.substring(0,resultString.indexOf("/"));
+	}
+	
+	/**
+	 * Extract the path (i.e. that part of a URL that follows the host) from a URL of the form 
+	 * http://www.host.com/.....path
+	 * @param url
+	 * @return
+	 */
+	public static String getPath(String url){
+		String resultString = url.substring(7);
+		return resultString.substring(resultString.indexOf("/"));
+	}
+	
+	public static int parseForContentLength(String line){
+		for (String subline : line.split("\n")){
+			if (subline.contains("Content-Length") || subline.contains("Content-length") || subline.contains("content-length")){
+				return Integer.parseInt(subline.split(":")[subline.split(":").length-1].replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", ""));
+			}
+		}
+		
+		return -1;
+	}
+	
 
 }

@@ -17,6 +17,7 @@ public class Request {
 			this.path = path;
 			this.version = extractVersion(versionString);
 			this.type = extractType(typeString);
+			setContent("");
 		}
 		
 		public Request(RequestType type, String path, int port, HTTPVersion version) throws URISyntaxException{
@@ -28,6 +29,7 @@ public class Request {
 			this.path = path;
 			this.version = version;
 			this.type = type;
+			setContent("");
 		}
 		
 		public RequestType getRequestType(){
@@ -40,6 +42,23 @@ public class Request {
 		
 		public HTTPVersion getVersion(){
 			return this.version;
+		}
+		
+		public String getContent(){
+			if (canHaveContent()){
+				return this.content;
+			}else{
+				return null;
+			}
+			
+		}
+		
+		public void setContent(String content){
+			if (canHaveContent())this.content = content;
+		}
+		
+		private Boolean canHaveContent(){
+			return (getRequestType() == RequestType.POST || getRequestType() == RequestType.PUT);
 		}
 		
 		private static RequestType extractType(String typeString) throws UnknownRequestException{
@@ -70,4 +89,5 @@ public class Request {
 		private final String path;
 		private final HTTPVersion version;
 		private final RequestType type;
+		private String content;
 }
