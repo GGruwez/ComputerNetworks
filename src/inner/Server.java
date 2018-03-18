@@ -52,7 +52,7 @@ public class Server implements Runnable {
 		}
 	}
 	
-	
+
 	private void requestHandler(Socket clientSocket) throws Exception{
 		try {
 			/*//input from client
