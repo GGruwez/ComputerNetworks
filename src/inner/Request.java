@@ -2,6 +2,8 @@ package inner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import exceptions.UnknownHTTPVersionException;
 import exceptions.UnknownRequestException;
@@ -17,7 +19,8 @@ public class Request {
 			this.path = path;
 			this.version = extractVersion(versionString);
 			this.type = extractType(typeString);
-			setContent("");
+			List<String> content = new ArrayList<String>();
+			setContent(content);
 		}
 		
 		public Request(RequestType type, String path, int port, HTTPVersion version) throws URISyntaxException{
@@ -29,7 +32,8 @@ public class Request {
 			this.path = path;
 			this.version = version;
 			this.type = type;
-			setContent("");
+			List<String> content = new ArrayList<String>();
+			setContent(content);
 		}
 		
 		public RequestType getRequestType(){
@@ -44,7 +48,7 @@ public class Request {
 			return this.version;
 		}
 		
-		public String getContent(){
+		public List<String> getContent(){
 			if (canHaveContent()){
 				return this.content;
 			}else{
@@ -53,7 +57,7 @@ public class Request {
 			
 		}
 		
-		public void setContent(String content){
+		public void setContent(List<String> content){
 			if (canHaveContent())this.content = content;
 		}
 		
@@ -89,5 +93,5 @@ public class Request {
 		private final String path;
 		private final HTTPVersion version;
 		private final RequestType type;
-		private String content;
+		private List<String> content;
 }

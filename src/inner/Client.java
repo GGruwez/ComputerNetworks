@@ -121,6 +121,29 @@ public class Client {
 		 * HELP METHODS
 		 */
 		
+		public static List<String> askForMessageContent() throws IOException{
+			BufferedReader contentReader = new BufferedReader(new InputStreamReader(System.in));
+			System.out.print("Insert POST request content and press ENTER for every line: " );
+			System.out.print("Finish with #END# ");
+			
+			Boolean reading = true;
+			List<String> content = new ArrayList<String>();
+			while (reading){
+				String line = contentReader.readLine();
+				if (line.equals("#END#")){
+					reading = false;
+				}else{
+					content.add(line);
+				}
+			}
+			
+			contentReader.close();
+			
+			return content;
+			
+			
+		}
+		
 		public static String getHostFromURL(String URL) throws URISyntaxException{
 			String host = convertToReadableURL(URL);
 			host = new URI(host).getHost();
@@ -154,6 +177,8 @@ public class Client {
 					executeHead(request, displayToTerminal);
 				}else if (request.getRequestType() == RequestType.POST){
 					executePost(request, displayToTerminal);
+				} else if (request.getRequestType() == RequestType.PUT){
+					executePut(request, displayToTerminal);
 				}else{
 					throw new UnknownRequestException();
 				}
@@ -250,23 +275,19 @@ public class Client {
 
 				// Send request
 				sendHTTP_1_1Request(request);
-				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.HEAD, false, request.getPath(), true);
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
 				
 				// Send request
 				sendHTTP_1_0Request(request);
-				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.HEAD, false, request.getPath(), true);
 		        
 			}else{
 				throw new UnknownHTTPVersionException();
 			}
 			
+			// Print and store server output
+			displayAndStoreResponse(fileName, RequestType.HEAD, !displayToTerminal, request.getPath(), true);
 			
 	        
 		}
@@ -274,11 +295,7 @@ public class Client {
 		private void executePost(Request request, Boolean displayToTerminal) throws IOException, UnknownHTTPVersionException{
 			
 			// Get content of POST request
-			BufferedReader contentReader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.print("Insert POST request content and press ENTER: " );
-			String content = contentReader.readLine();
-			contentReader.close();
-			
+			List<String> content = askForMessageContent();
 			request.setContent(content);
 			
 			// Check whether or not this is a POST request
@@ -295,27 +312,27 @@ public class Client {
 
 				// Send request
 				sendHTTP_1_1Request(request);
-				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.POST, false, request.getPath(), true);
 		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
 				
 				// Send request
 				sendHTTP_1_0Request(request);
-				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.POST, false, request.getPath(), true);
 		        
 			}else{
 				throw new UnknownHTTPVersionException();
 			}
 			
+			// Print and store server output
+			displayAndStoreResponse(fileName, RequestType.POST, !displayToTerminal, request.getPath(), true);
 	        
 		}
 		
 		private void executePut(Request request, Boolean displayToTerminal) throws IOException, UnknownHTTPVersionException{
+			
+			// Get content of PUT request
+			List<String> content = askForMessageContent();
+			request.setContent(content);
 			
 			// Check whether or not this is a PUT request
 			if (request.getRequestType() != RequestType.PUT){
@@ -332,22 +349,18 @@ public class Client {
 				// Send request
 				sendHTTP_1_1Request(request);
 				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.PUT, false, request.getPath(), true);
-		        
 			}else if (request.getVersion() == HTTPVersion.HTTP_1_0){
 				// Execute as an HTTP/1.0 request
 				
 				// Send request
 				sendHTTP_1_0Request(request);
-				
-				// Print and store server output
-				displayAndStoreResponse(fileName, RequestType.PUT, false, request.getPath(), true);
 		        
 			}else{
 				throw new UnknownHTTPVersionException();
 			}
 			
+			// Print and store server output
+			displayAndStoreResponse(fileName, RequestType.PUT, !displayToTerminal, request.getPath(), true);
 	        
 		}
 		
@@ -369,7 +382,7 @@ public class Client {
 			
 			PrintStream writer = getSocketWriter();
 			
-			String content;
+			List<String> content;
 			
 			String commandLine1 = requestType + " " + path + " " + version;
 			String commandLine2 = "Host: " + host;
@@ -379,8 +392,14 @@ public class Client {
 	        writer.println(commandLine3);
 	        
 	        if ((content = request.getContent()) != null){
+	        	
+	        	int contentLength = content.size();
+	        	for (String line : content){
+	        		contentLength += line.length();
+	        	}
+	        	
 	        	writer.println("Content-Type: text/html");
-	        	writer.println("Content-Length: " + content.length());
+	        	writer.println("Content-Length: " + contentLength);
 	        }
 	        
 	        writer.println();
@@ -388,7 +407,9 @@ public class Client {
 
 	        
 	        if ((content = request.getContent()) != null){
-	        	writer.println(content);
+	        	for (String line : content){
+	        		writer.println(line);
+	        	}
 	        	writer.flush();
 	        }
 	        
