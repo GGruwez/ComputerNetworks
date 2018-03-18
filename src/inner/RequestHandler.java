@@ -85,6 +85,10 @@ public class RequestHandler implements Runnable {
 		return header;
 	}
 	
+	private String getHost(){
+		return this.host;
+	}
+	
 	
 
 }
