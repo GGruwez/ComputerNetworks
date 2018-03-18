@@ -3,8 +3,8 @@ import inner.*;
 
 public class ServerMain {
 
-	public static void main(String[] args) throws Exception {
-		Server server = new Server(6969);
+	public static void main(String[] args) {
+		Server server = new Server(1997);
 		server.run();
 		
 	}
