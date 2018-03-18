@@ -10,12 +10,22 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Parser {
+/**
+ * An abstract class containing all parsing-related methods
+ * @author anthonyrathe
+ *
+ */
+public abstract class Parser {
 	
-	public Parser(){
-		
-	}
 	
+	/**
+	 * Method that returns absolute addresses of all image tags found in a given HTML file.
+	 * These addresses are based on the given baseURL
+	 * @param file
+	 * @param baseURL
+	 * @return
+	 * @throws IOException
+	 */
 	public static List<String> findImageURLs(File file, String baseURL) throws IOException{
 		List<String> imageURLs = new ArrayList<String>();
 		
@@ -61,6 +71,13 @@ public class Parser {
 		return resultString.substring(resultString.indexOf("/"));
 	}
 	
+	/**
+	 * Method that extracts the Content-Length field of a HTTP header.
+	 * Returns the value of the field if the field was contained in the provided string.
+	 * Returns -1 if the field couldn't be found.
+	 * @param line
+	 * @return
+	 */
 	public static int parseForContentLength(String line){
 		for (String subline : line.split("\n")){
 			if (subline.contains("Content-Length") || subline.contains("Content-length") || subline.contains("content-length")){

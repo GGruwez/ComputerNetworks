@@ -1,26 +1,18 @@
 package inner;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import exceptions.SocketClosedException;
@@ -30,7 +22,7 @@ import exceptions.UnknownRequestException;
 public class Client {
 
 		/**
-		 * Constructs a client object with given URL and port.
+		 * Constructs a client object with given URL and port. The client is in charge of providing a connection with the host.
 		 * @param URL
 		 * @param port
 		 * @throws URISyntaxException
@@ -56,7 +48,7 @@ public class Client {
 		}
 		
 		/**
-		 * Constructs a client object.
+		 * Constructs a client object with given URL and port. The client is in charge of providing a connection with the host.
 		 * @param URL
 		 * @param port
 		 * @throws URISyntaxException
@@ -84,7 +76,6 @@ public class Client {
 		
 		/**
 		 * Closes client socket.
-		 * 
 		 * @throws IOException
 		 */
 		public void close() throws IOException{
@@ -121,10 +112,15 @@ public class Client {
 		 * HELP METHODS
 		 */
 		
+		/**
+		 * Method that asks for multi-line user input.
+		 * @return
+		 * @throws IOException
+		 */
 		public static List<String> askForMessageContent() throws IOException{
 			BufferedReader contentReader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.print("Insert POST request content and press ENTER for every line: " );
-			System.out.print("Finish with #END# ");
+			System.out.println("Insert request content and press ENTER for every line: " );
+			System.out.println("Finish with #END# ");
 			
 			Boolean reading = true;
 			List<String> content = new ArrayList<String>();
@@ -144,12 +140,23 @@ public class Client {
 			
 		}
 		
+		/**
+		 * Method that parses a URL and returns the host.
+		 * @param URL
+		 * @return
+		 * @throws URISyntaxException
+		 */
 		public static String getHostFromURL(String URL) throws URISyntaxException{
 			String host = convertToReadableURL(URL);
 			host = new URI(host).getHost();
 			return host;
 		}
 		
+		/**
+		 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
+		 * @param URL
+		 * @return
+		 */
 		public static String convertToReadableURL(String URL){
 			if (URL.contains("http://")){
 				return URL;
@@ -158,6 +165,12 @@ public class Client {
 			}
 		}
 		
+		/**
+		 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
+		 * @param URL
+		 * @return
+		 * @throws URISyntaxException
+		 */
 		public static URI convertToReadableURL(URI URL) throws URISyntaxException{
 			String URLString = URL.toString();
 			return new URI(convertToReadableURL(URLString));
@@ -167,6 +180,16 @@ public class Client {
 		 * REQUEST METHODS
 		 */
 		
+		/**
+		 * Method that executes a given HTTP request and displays the response in the terminal (if displayToTerminal == true)
+		 * @param request
+		 * @param displayToTerminal
+		 * @throws UnknownRequestException
+		 * @throws IOException
+		 * @throws UnknownHTTPVersionException
+		 * @throws URISyntaxException
+		 * @throws SocketClosedException
+		 */
 		public void execute(Request request, Boolean displayToTerminal) throws UnknownRequestException, IOException, UnknownHTTPVersionException, URISyntaxException, SocketClosedException{
 			if (getSocket().isClosed()){
 				throw new SocketClosedException();
@@ -186,7 +209,7 @@ public class Client {
 		}
 		
 		/**
-		 * Method for the execution of a GET request
+		 * Executes GET request
 		 * @param request
 		 * @throws IOException
 		 * @throws UnknownHTTPVersionException
@@ -254,7 +277,7 @@ public class Client {
 		}
 		
 		/**
-		 * Executes HEAD request // HEAD = GET without actual body message.
+		 * Executes HEAD request
 		 * @param request
 		 * @throws IOException
 		 * @throws UnknownHTTPVersionException
@@ -292,6 +315,13 @@ public class Client {
 	        
 		}
 		
+		/**
+		 * Executes POST request
+		 * @param request
+		 * @param displayToTerminal
+		 * @throws IOException
+		 * @throws UnknownHTTPVersionException
+		 */
 		private void executePost(Request request, Boolean displayToTerminal) throws IOException, UnknownHTTPVersionException{
 			
 			// Get content of POST request
@@ -324,10 +354,17 @@ public class Client {
 			}
 			
 			// Print and store server output
-			displayAndStoreResponse(fileName, RequestType.POST, !displayToTerminal, request.getPath(), true);
+			displayAndStoreResponse(fileName, RequestType.POST, !displayToTerminal, request.getPath(), false);
 	        
 		}
 		
+		/**
+		 * Executes PUT request
+		 * @param request
+		 * @param displayToTerminal
+		 * @throws IOException
+		 * @throws UnknownHTTPVersionException
+		 */
 		private void executePut(Request request, Boolean displayToTerminal) throws IOException, UnknownHTTPVersionException{
 			
 			// Get content of PUT request
@@ -360,7 +397,7 @@ public class Client {
 			}
 			
 			// Print and store server output
-			displayAndStoreResponse(fileName, RequestType.PUT, !displayToTerminal, request.getPath(), true);
+			displayAndStoreResponse(fileName, RequestType.PUT, !displayToTerminal, request.getPath(), false);
 	        
 		}
 		
@@ -435,17 +472,38 @@ public class Client {
 			
 			PrintStream writer = getSocketWriter();
 			
+			List<String> content;
+			
 			String commandLine1 = requestType + " http://" + host + path + " " + version;
 	        writer.println(commandLine1);
+	        
+	        if ((content = request.getContent()) != null){
+	        	
+	        	int contentLength = content.size();
+	        	for (String line : content){
+	        		contentLength += line.length();
+	        	}
+	        	
+	        	writer.println("Content-Type: text/html");
+	        	writer.println("Content-Length: " + contentLength);
+	        }
+
 	        writer.println();
 	        writer.flush();
+	        
+	        if ((content = request.getContent()) != null){
+	        	for (String line : content){
+	        		writer.println(line);
+	        	}
+	        	writer.flush();
+	        }
 			
 		}
 		
 		
 		/**
 		 * Method that displays and stores the HTTP response.
-		 * Returns a list of all the image urls in the HTML file that was retrieved. 
+		 * Returns a list of all the image URL in the HTML file that was retrieved. 
 		 * Returns an empty list if no image tags were found OR if the retrieved file was not an HTML file. 
 		 * @param fileName
 		 * @param requestType
@@ -487,12 +545,11 @@ public class Client {
 
 		        offset = 0;
 	        	line = new String(bytes, 0, length);
+	        	int stringLength = line.length();
 	        	
 	        	if (contentLength == -1 && !headerFound){
 	        		contentLength = Parser.parseForContentLength(line);
 	        	}
-	        	
-	        	if (!storeOnly)System.out.print(line);
 	        	
 	        	if (!headerFound && (offset = line.indexOf("\r\n\r\n")) != -1){
 	        		if (!headerOnly){
@@ -501,11 +558,14 @@ public class Client {
 		        		nbOfReadBytes = 0;
 		        		writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
 	        		}else{
+	        			stringLength = offset;
 	        			length = offset;
 	        			offset = 0;
 	        		}
 	        		headerFound = true;
 	        	};
+	        	
+	        	if (!storeOnly)System.out.print(line.substring(0, stringLength));
 	        	
 	        	nbOfReadBytes += length;
 	        	writer.write(bytes, offset, length);
@@ -526,6 +586,10 @@ public class Client {
 	        return imageURLs;
 	        
 		}
+		
+		/* 
+		 * VARIABLES 
+		 */
 		
 		private final Socket socket;
 		private final PrintStream socketWriter;

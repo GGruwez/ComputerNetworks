@@ -1,10 +1,8 @@
 package main;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import exceptions.SocketClosedException;
 import exceptions.UnknownHTTPVersionException;

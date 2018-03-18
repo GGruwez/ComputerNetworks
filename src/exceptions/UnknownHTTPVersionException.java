@@ -1,5 +1,10 @@
 package exceptions;
 
+/**
+ * Exception thrown when a string couldn't be associated with a supported HTTPVersion
+ * @author anthonyrathe
+ *
+ */
 public class UnknownHTTPVersionException extends Exception {
 
 	public UnknownHTTPVersionException(String versionString){
