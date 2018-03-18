@@ -2,19 +2,18 @@ package inner;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.io.*;
 
 
 public class Server implements Runnable {
 	
 	
-    public int          portNumber   = 1000;
+    public int          portNumber   = 6969;
     public ServerSocket serverSocket = null;
     public Thread       runningThread= null;
+    public boolean      isClosed    = false;
+
 
 	
 	public Server(int port) throws Exception{
@@ -41,7 +40,7 @@ public class Server implements Runnable {
 		 */
 		
 		//accept incoming connections and try handle them
-		while(true){
+		while(!isClosed){
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if (clientSocket != null){
@@ -56,16 +55,31 @@ public class Server implements Runnable {
 	
 	private void requestHandler(Socket clientSocket) throws Exception{
 		try {
-			//input from client
+			/*//input from client
 			BufferedReader in = new BufferedReader(new
                     InputStreamReader(clientSocket.getInputStream()));
 			//output to client
             DataOutputStream out = new DataOutputStream
                     (clientSocket.getOutputStream());
             
+            
             String inputLine, outputLine;
             
-            inputLine = in.readLine();
+            inputLine = in.readLine();*/
+			
+			InputStream  input  = clientSocket.getInputStream();
+	        OutputStream output = clientSocket.getOutputStream();
+	        long time = System.currentTimeMillis();
+
+	        int responseDocument = 19999;
+
+	        int responseHeader = 10000;
+
+	        output.write(responseHeader);
+	        output.write(responseDocument);
+	        output.close();
+	        input.close();
+	        System.out.println("Request processed: " + time);
             
             
 		} catch (Exception e) {
@@ -74,8 +88,20 @@ public class Server implements Runnable {
 	}
 	
 	
+	public void close(){
+        this.isClosed = true;
+        try {
+            this.serverSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Error closing server", e);
+        }
+    }
+
+    
+	
 	public void setPort(int port){
-		if (port < 0) {
+		//port moet groter zijn dan 1024 voor non-root users!
+		if (port < 1024) {
 			throw new IllegalArgumentException("Invalid port");
 		} else {
 			this.portNumber = port;
