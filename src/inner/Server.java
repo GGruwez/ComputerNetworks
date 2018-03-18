@@ -1,18 +1,19 @@
 package inner;
 
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
+import java.net.*;
+import java.util.concurrent.*;
 import java.io.*;
 
 
 public class Server implements Runnable {
 	
-	
-    public int          portNumber   = 6969;
-    public ServerSocket serverSocket = null;
-    public Thread       runningThread= null;
-    public boolean      isClosed    = false;
+	//fields
+    private int portNumber;
+    private ServerSocket serverSocket;
+    private Thread runningThread;
+    private boolean isClosed = false;
+    private ExecutorService threadPool;
+
 
 
 	
@@ -20,42 +21,41 @@ public class Server implements Runnable {
 			this.setPort(port);
 	}
 	
+	
 	@Override
 	public void run(){
-		this.runningThread = Thread.currentThread();
 		
-		//open server
-		try{
-			this.serverSocket = new ServerSocket(this.portNumber);
-		} catch (IOException e) {
-			System.out.println("Cannot open server.");
-		}
 		
-		/*
-		 *  Accept incoming connections, create thread for each one of them,
-		 *	while listening to more incoming connections
-		 *  As stated in the course multi-threading can be done with thread pools
-	 	 * https://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
-		 * https://softwareengineering.stackexchange.com/questions/173575/what-is-a-thread-pool
-		 */
+		//create a cached thread pool, a cached thread pool keeps released threads for 60sec
+        //if the threads are not reclaimed after that the resources are released
+        this.threadPool = Executors.newCachedThreadPool();
+        
+        //initialize the serverSocket
+        try {
+            this.serverSocket = new ServerSocket(getPort());
+        } catch (IOException e) {
+            e.getMessage();
+        }
 		
-		//accept incoming connections and try handle them
+		
+		//accept incoming connections, create a processing object and submit to threadpool!
 		while(!isClosed){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				if (clientSocket != null){
-					requestHandler(clientSocket);
-				}
-			} catch (Exception e) {
-				System.out.println("Handler issue");
+				BusyClient busyClient = new BusyClient(this, clientSocket);
+				threadPool.submit(busyClient);
+			} catch (IOException e) {
+				System.out.println("Connection issue");
 			}
 		}
+		//close our server if we exited the loop
+		this.closeServer();
 	}
 	
 
-	private void requestHandler(Socket clientSocket) throws Exception{
+	/*private void requestHandler(Socket clientSocket) throws Exception{
 		try {
-			/*//input from client
+			//input from client
 			BufferedReader in = new BufferedReader(new
                     InputStreamReader(clientSocket.getInputStream()));
 			//output to client
@@ -65,7 +65,7 @@ public class Server implements Runnable {
             
             String inputLine, outputLine;
             
-            inputLine = in.readLine();*/
+            inputLine = in.readLine();
 			
 			InputStream  input  = clientSocket.getInputStream();
 	        OutputStream output = clientSocket.getOutputStream();
@@ -85,10 +85,10 @@ public class Server implements Runnable {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-	}
+	}*/
 	
 	
-	public void close(){
+	public void closeServer(){
         this.isClosed = true;
         try {
             this.serverSocket.close();
@@ -99,7 +99,7 @@ public class Server implements Runnable {
 
     
 	
-	public void setPort(int port){
+	private void setPort(int port){
 		//port moet groter zijn dan 1024 voor non-root users!
 		if (port < 1024) {
 			throw new IllegalArgumentException("Invalid port");
@@ -108,8 +108,16 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public int getPort(){
+	private int getPort(){
 		return this.portNumber;
+	}
+	
+	private ServerSocket getServerSocket(){
+		return this.serverSocket;
+	}
+	
+	private ExecutorService getThreadPool(){
+		return this.threadPool;
 	}
 	
 	

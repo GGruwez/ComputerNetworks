@@ -5,12 +5,9 @@ public class ServerMain {
 
 	public static void main(String[] args) throws Exception {
 		Server server = new Server(6969);
-		new Thread(server).start();
-		server.close();
-
+		server.run();
 		
 	}
 	
-	public Server server;
 	
 }
