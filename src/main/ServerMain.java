@@ -11,5 +11,6 @@ public class ServerMain {
 		
 	}
 	
+	public Server server;
 	
 }
