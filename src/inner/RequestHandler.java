@@ -1,6 +1,8 @@
 package inner;
 import java.net.*;
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Output: responses
@@ -66,7 +68,20 @@ public class RequestHandler implements Runnable {
 	}
 	
 	private String makeHeader(){
+		// \n --> LF
+		// \r --> CR
+
 		String header = " ";
+		
+		
+				
+		
+		LocalDate date = LocalDate.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd");
+		String text = date.format(formatter);
+		LocalDate parsedDate = LocalDate.parse(text, formatter);
+		header += "Date:  " + parsedDate;
+		
 		return header;
 	}
 	
