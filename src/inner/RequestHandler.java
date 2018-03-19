@@ -36,8 +36,10 @@ public class RequestHandler {
 			System.out.println("Server error");
 		}
 		
-		
-		if (this.stringRequest.contains("GET")) {
+		if (!this.containsHost() /*& version = 1.1*/ ) {
+			this.code = 400;
+		}
+		else if (this.stringRequest.contains("GET")) {
 			executeGET();
 		}
 		else if (this.stringRequest.contains("HEAD")) {
@@ -49,9 +51,6 @@ public class RequestHandler {
 		else if (this.stringRequest.contains("POST")) {
 			executePOST();
 		}
-		else if (!this.containsHost() /*&& version = 1.1*/ ) {
-			this.code = 400;
-		}
 		else {
 			this.code = 400;
 		}
@@ -60,6 +59,7 @@ public class RequestHandler {
 	
 
 	private void executeGET(){
+		String fileName = null;
 		
 	}
 	
