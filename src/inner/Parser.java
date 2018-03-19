@@ -88,5 +88,15 @@ public abstract class Parser {
 		return -1;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public RequestType parseForRequestType(){
+		
+	}
+	
+	//public String 
+	
 
 }
