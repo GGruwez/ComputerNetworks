@@ -1,5 +1,6 @@
 package inner;
 import java.net.*;
+import java.text.SimpleDateFormat;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,22 +10,23 @@ import java.time.format.DateTimeFormatter;
  * @author Gilles
  *
  */
-public class RequestHandler implements Runnable {
+public class RequestHandler {
 	
 	public BusyClient busyClient;
 	public String host = "localhost";
 	public String stringRequest;
 	public int HTTP;
-	public int code = 200;
+	public int code;
+	public Response response;
 
 	
 	public RequestHandler(BusyClient busyClient){
 		this.busyClient = busyClient;
 	}
 	
-	@Override
-	public void run() {
+	public void handle() {
 		try {
+			//extract request
 			byte[] request = new byte[10000000];
 			busyClient.getInput().read(request);
 			this.stringRequest = new String(request);
@@ -34,7 +36,10 @@ public class RequestHandler implements Runnable {
 			System.out.println("Server error");
 		}
 		
-		if (this.stringRequest.contains("GET")) {
+		if (!this.containsHost() /*& version = 1.1*/ ) {
+			this.code = 400;
+		}
+		else if (this.stringRequest.contains("GET")) {
 			executeGET();
 		}
 		else if (this.stringRequest.contains("HEAD")) {
@@ -50,8 +55,11 @@ public class RequestHandler implements Runnable {
 			this.code = 400;
 		}
 	}
+	
+	
 
 	private void executeGET(){
+		String fileName = null;
 		
 	}
 	
@@ -67,26 +75,28 @@ public class RequestHandler implements Runnable {
 		
 	}
 	
-	private String makeHeader(){
-		// \n --> LF
-		// \r --> CR
+	public int getCode(){
+		return this.code;
+	}
+	
+	public BusyClient getBusyClient(){
+		return this.busyClient;
+	}
+	
+	private Boolean containsHost(){
+		if (this.stringRequest.contains("\r\nHost:"))
+			return true;
+		else
+			return false;
 
-		String header = " ";
-		
-		
-				
-		
-		LocalDate date = LocalDate.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd");
-		String text = date.format(formatter);
-		LocalDate parsedDate = LocalDate.parse(text, formatter);
-		header += "Date:  " + parsedDate;
-		
-		return header;
 	}
 	
 	private String getHost(){
 		return this.host;
+	}
+	
+	public Response getResponse(){
+		return this.response;
 	}
 	
 	

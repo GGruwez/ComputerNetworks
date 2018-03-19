@@ -4,7 +4,7 @@ import java.net.*;
 import java.io.*;
 
 /**
- * A busy client is a client communicating with a server.
+ * A busy client is a client communicating with a server// connection.
  * @author Gilles
  *
  */
@@ -15,10 +15,12 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	public BufferedInputStream input;
 	public DataOutputStream output;
 	public Boolean isStopped;
+	public RequestHandler requestHandler;
 	
 	public BusyClient(Server server, Socket socket){
 		this.server = server;
 		this.socket = socket;
+		//this.requestHandler = requestHandler;
 	}
 	
 	@Override
@@ -42,7 +44,7 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		//activate requestHandler - hoe hier precies de handler implementeren, requesthandler in deze class implementeren?
 		while(!isStopped){
 			try {
-				new RequestHandler(this);
+				new RequestHandler(this).handle();
 			} catch (Exception e){
 				e.printStackTrace();
 			}
