@@ -13,8 +13,7 @@ import java.time.format.DateTimeFormatter;
 public class RequestHandler {
 	
 	public BusyClient busyClient;
-	public String host = "localhost";
-	public String stringRequest;
+	public static final String HOST = "localhost";
 	public int HTTP;
 	public int code;
 	public Response response;
@@ -25,35 +24,58 @@ public class RequestHandler {
 	}
 	
 	public void handle() {
+		
+		BusyClient busyClient = getBusyClient();
+		
 		try {
-			//extract request
-			byte[] request = new byte[10000000];
-			busyClient.getInput().read(request);
-			this.stringRequest = new String(request);
+			//extract request header and body
+			byte[] request = new byte[2048];
+			int index, offset, length;
+			String line;
+			String header = "";
+			String message = "";
+			int contentLength = 0;
+			int readBytes = -1;
+			Boolean headerFound = false;
+			
+			System.out.println("HANDLING STARTED");
+			
+			while (readBytes < contentLength && busyClient.getInput().available()>0){
+						
+				busyClient.getInput().read(request);
+				
+				offset = 0;
+				line = new String(request);
+				length = line.length();
+				
+				index = line.indexOf("\r\n\r\n");
+				
+				if (index != -1 && !headerFound){
+					header += line.substring(0, index);
+					offset = index+4;
+					readBytes = length - index - 4;
+					headerFound = true;
+				}
+				
+				if (!headerFound){
+					header += line;
+				}else{
+					message += line.substring(offset);
+					readBytes += length;
+				}
+				
+				
+			}
+			System.out.println(header);
+			System.out.println("---------------------");
+			System.out.println(message);
+			System.out.println("HANDLING FINISHED");
 		}
 		catch (IOException e) {
 			this.code = 500;
 			System.out.println("Server error");
 		}
 		
-		if (!this.containsHost() /*& version = 1.1*/ ) {
-			this.code = 400;
-		}
-		else if (this.stringRequest.contains("GET")) {
-			executeGET();
-		}
-		else if (this.stringRequest.contains("HEAD")) {
-			executeHEAD();
-		}
-		else if (this.stringRequest.contains("PUT")) {
-			executePUT();
-		}
-		else if (this.stringRequest.contains("POST")) {
-			executePOST();
-		}
-		else {
-			this.code = 400;
-		}
 	}
 	
 	
@@ -83,16 +105,8 @@ public class RequestHandler {
 		return this.busyClient;
 	}
 	
-	private Boolean containsHost(){
-		if (this.stringRequest.contains("\r\nHost:"))
-			return true;
-		else
-			return false;
-
-	}
-	
 	private String getHost(){
-		return this.host;
+		return HOST;
 	}
 	
 	public Response getResponse(){

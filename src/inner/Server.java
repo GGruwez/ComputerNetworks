@@ -10,7 +10,7 @@ public class Server {
 	//fields
     private final int portNumber;
     private ServerSocket serverSocket;
-    private boolean isClosed = false;
+    private boolean isClosed;
     private ExecutorService threadPool;
 
 	
@@ -20,27 +20,27 @@ public class Server {
 	
 	/**
 	 * start server..
+	 * @throws IOException 
 	 */
-	public void start(){
+	public void start() throws IOException{
+		
+		open();
 		
 		//create threadpool
 		//cached threadpool heeft betere performance want reuses threads wanneer idle voor 60s
-        this.threadPool = Executors.newCachedThreadPool();
+        setThreadPool(Executors.newCachedThreadPool());
         
         //initialize the serverSocket
-        try {
-            this.serverSocket = new ServerSocket(getPort());
-        } catch (IOException e) {
-            e.getMessage();
-        }
+        setServerSocket(new ServerSocket(getPort()));
 		
 		
 		//accept incoming connections, create busyClient for every connection and submit to threadpool!
-		while(!isClosed){
+		while(!isClosed()){
 			try{
-				Socket clientSocket = serverSocket.accept();
+				Socket clientSocket = getServerSocket().accept();
 				BusyClient busyClient = new BusyClient(this, clientSocket);
-				threadPool.submit(busyClient);
+				getThreadPool().submit(busyClient);
+				System.out.println("Client accepted");
 			} catch (IOException e) {
 				System.out.println("Connection issue");
 			}
@@ -52,9 +52,9 @@ public class Server {
 
 	
 	public void closeServer(){
-        this.isClosed = true;
+        close();
         try {
-            this.serverSocket.close();
+            getServerSocket().close();
         } catch (IOException e) {
             throw new RuntimeException("Error closing server", e);
         }
@@ -66,8 +66,28 @@ public class Server {
 		return this.portNumber;
 	}
 	
-	private ServerSocket getServerSocket(){
+	public boolean isClosed(){
+		return this.isClosed;
+	}
+	
+	public void close(){
+		this.isClosed = true;
+	}
+	
+	private void open(){
+		this.isClosed = false;
+	}
+	
+	private void setServerSocket(ServerSocket serverSocket){
+		this.serverSocket = serverSocket;
+	}
+	
+	public ServerSocket getServerSocket(){
 		return this.serverSocket;
+	}
+	
+	private void setThreadPool(ExecutorService threadPool){
+		this.threadPool = threadPool;
 	}
 	
 	private ExecutorService getThreadPool(){
