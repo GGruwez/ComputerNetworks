@@ -8,6 +8,7 @@ import exceptions.SocketClosedException;
 import exceptions.UnknownHTTPVersionException;
 import exceptions.UnknownRequestException;
 import inner.Client;
+import inner.Parser;
 import inner.Request;
 
 public class ClientMain {
@@ -30,6 +31,9 @@ public class ClientMain {
 			exception.printStackTrace();
 		}
 		
+		
+		System.out.println(Parser.parseRequestHeader("GET www.tinyos.net/ 80 HTTP/1.1"));
+
 		
 	}
 }

@@ -188,12 +188,39 @@ public abstract class Parser {
 	}
 	
 	/**
-	 * 
+	 * Returns the request type for the so the requestHandler can generate the proper response. 
 	 * @return
+	 * @throws URISyntaxException 
+	 * @throws UnknownHTTPVersionException 
 	 */
-	public RequestType parseForRequestType(){
+	public static Request parseRequestHeader(String header) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException{
+		RequestType type = null;
+		String path = null;
+		int port = 0;
+		HTTPVersion version = null;
 		
+		//split header in lines
+		String[] lines = header.split("\n");
+		System.out.println(lines);
+		
+		//split initial line in strings
+		String[] initialLine = lines[0].split(" ");
+		System.out.println(initialLine);
+		
+		//get type, path, port, version
+		type = extractType(initialLine[0]);
+		path = getPath(initialLine[1]);
+		port = getPort(initialLine[2]);
+		version = extractVersion(initialLine[3]);
+		
+		return new Request(type, path, port, version);
 	}
+	
+	public int getPort(String port){
+		return Integer.parseInt(port);
+	}
+	
+	
 
 
 }
