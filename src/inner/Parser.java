@@ -192,8 +192,9 @@ public abstract class Parser {
 	 * @return
 	 * @throws URISyntaxException 
 	 * @throws UnknownHTTPVersionException 
+	 * @throws IOException 
 	 */
-	public static Request parseRequestHeader(String header) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException{
+	public static Request parseRequestHeader(String header) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException, IOException{
 		RequestType type = null;
 		String path = null;
 		int port = 0;
@@ -208,15 +209,30 @@ public abstract class Parser {
 		System.out.println(initialLine);
 		
 		//get type, path, port, version
-		type = extractType(initialLine[0]);
-		path = getPath(initialLine[1]);
-		port = getPort(initialLine[2]);
-		version = extractVersion(initialLine[3]);
+		if (initialLine.length==4){
+			type = extractType(initialLine[0]);
+			path = getPath(initialLine[1]);
+			port = getPort(initialLine[2]);
+			version = extractVersion(initialLine[3]);
+		} 
+		//request without port
+		else if (initialLine.length==3){
+			type = extractType(initialLine[0]);
+			path = getPath(initialLine[1]);
+			version = extractVersion(initialLine[2]);
+
+		} else{
+			throw new IOException();
+		}
+	
+		
 		
 		return new Request(type, path, port, version);
+		
+		
 	}
 	
-	public int getPort(String port){
+	public static int getPort(String port){
 		return Integer.parseInt(port);
 	}
 	

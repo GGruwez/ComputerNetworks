@@ -113,7 +113,7 @@ public class Client {
 		 */
 		
 		/**
-		 * Method that asks for multi-line user input.
+		 * Method that asks for multi-line user input, this method is used to ask for POST and PUT content. 
 		 * @return
 		 * @throws IOException
 		 */
