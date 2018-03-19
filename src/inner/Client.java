@@ -43,7 +43,7 @@ public class Client {
             this.socket = clientSocket;
             this.socketWriter = serverInput;
             this.socketReader = serverOutput;
-            this.host = convertToReadableURL(URL).getHost();
+            this.host = Parser.convertToReadableURL(URL).getHost();
             this.port = port;
 		}
 		
@@ -57,7 +57,7 @@ public class Client {
 		 */
 		public Client(String URL, String port) throws URISyntaxException, UnknownHostException, IOException{
 			
-			String host = getHostFromURL(URL);
+			String host = Parser.getHostFromURL(URL);
 			int portInt = Integer.parseInt(port);
 			
 			Socket clientSocket = new Socket(host, portInt);
@@ -70,7 +70,7 @@ public class Client {
             this.socket = clientSocket;
             this.socketWriter = serverInput;
             this.socketReader = serverOutput;
-            this.host = new URI(convertToReadableURL(URL)).getHost();
+            this.host = new URI(Parser.convertToReadableURL(URL)).getHost();
             this.port = portInt;
 		}
 		
@@ -141,41 +141,7 @@ public class Client {
 			
 		}
 		
-		/**
-		 * Method that parses a URL and returns the host.
-		 * @param URL
-		 * @return
-		 * @throws URISyntaxException
-		 */
-		public static String getHostFromURL(String URL) throws URISyntaxException{
-			String host = convertToReadableURL(URL);
-			host = new URI(host).getHost();
-			return host;
-		}
 		
-		/**
-		 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
-		 * @param URL
-		 * @return
-		 */
-		public static String convertToReadableURL(String URL){
-			if (URL.contains("http://") || URL.contains("https://")){
-				return URL;
-			}else{
-				return "http://" + URL;
-			}
-		}
-		
-		/**
-		 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
-		 * @param URL
-		 * @return
-		 * @throws URISyntaxException
-		 */
-		public static URI convertToReadableURL(URI URL) throws URISyntaxException{
-			String URLString = URL.toString();
-			return new URI(convertToReadableURL(URLString));
-		}
 		
 		/*
 		 * REQUEST METHODS
@@ -246,7 +212,7 @@ public class Client {
 		        		execute(new Request(RequestType.GET, Parser.getPath(embeddedObjectURL), getPort(), HTTPVersion.HTTP_1_1), false);
 		        	}else{
 		        		// If image is not local, make a new connection
-		        		Client newClient = new Client(new URI(convertToReadableURL(embeddedObjectURL)), getPort());
+		        		Client newClient = new Client(new URI(Parser.convertToReadableURL(embeddedObjectURL)), getPort());
 		        		newClient.execute(new Request(RequestType.GET, Parser.getPath(embeddedObjectURL), getPort(), HTTPVersion.HTTP_1_1), false);
 		        	}
 		        }
@@ -263,7 +229,7 @@ public class Client {
 				// Fetch and store all embedded objects
 				for (String embeddedObjectURL : embeddedObjectsURLs){
 					// Always make a new connection for each embedded object
-		        	Client newClient = new Client(new URI(convertToReadableURL(embeddedObjectURL)), getPort());
+		        	Client newClient = new Client(new URI(Parser.convertToReadableURL(embeddedObjectURL)), getPort());
 		        	newClient.execute(new Request(RequestType.GET, Parser.getPath(embeddedObjectURL), getPort(), HTTPVersion.HTTP_1_0), false);
 				}
 				
@@ -521,14 +487,7 @@ public class Client {
 	        String baseURL = URL.substring(0,URL.lastIndexOf("/"));
 	        
 	        // Extract the extension of the requested file
-	        int lastSlashIndex = URL.lastIndexOf("/");
-	        int urlLength = URL.length();
-	        if (URL.split("/").length > 0){
-	        	URL = URL.split("/")[URL.split("/").length-1];
-		        if (URL.split("\\.").length > 1 && lastSlashIndex < urlLength-1 && !headerOnly){
-		        	extension = URL.split("\\.")[URL.split("\\.").length-1];
-		        }
-	        }
+	        if (!Parser.extractExtension(URL).equals("") && !Parser.extractExtension(URL).equals("PHP") && !Parser.extractExtension(URL).equals("php") && !headerOnly) extension = Parser.extractExtension(URL);
 	        
 	        
 	        // Create reader and writer

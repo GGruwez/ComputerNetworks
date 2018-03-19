@@ -2,6 +2,8 @@ package inner;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import exceptions.UnknownHTTPVersionException;
+import exceptions.UnknownRequestException;
 
 /**
  * An abstract class containing all parsing-related methods
@@ -88,5 +93,95 @@ public abstract class Parser {
 		return -1;
 	}
 	
+	/**
+	 * Returns the extension of a file at given URL.
+	 * Returns an empty string if no extension was found.
+	 * @param URL
+	 * @return
+	 */
+	public static String extractExtension(String URL){
+		int lastSlashIndex = URL.lastIndexOf("/");
+        int urlLength = URL.length();
+        if (URL.split("/").length > 0){
+        	URL = URL.split("/")[URL.split("/").length-1];
+	        if (URL.split("\\.").length > 1 && lastSlashIndex < urlLength-1){
+	        	return URL.split("\\.")[URL.split("\\.").length-1];
+	        }
+        }
+        return "";
+	}
+	
+	/**
+	 * Method that parses a URL and returns the host.
+	 * @param URL
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static String getHostFromURL(String URL) throws URISyntaxException{
+		String host = convertToReadableURL(URL);
+		host = new URI(host).getHost();
+		return host;
+	}
+	
+	/**
+	 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
+	 * @param URL
+	 * @return
+	 */
+	public static String convertToReadableURL(String URL){
+		if (URL.contains("http://") || URL.contains("https://")){
+			return URL;
+		}else{
+			return "http://" + URL;
+		}
+	}
+	
+	/**
+	 * Method that converts any URL to a URL that can be used with the URI method "getHost()"
+	 * @param URL
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI convertToReadableURL(URI URL) throws URISyntaxException{
+		String URLString = URL.toString();
+		return new URI(convertToReadableURL(URLString));
+	}
+	
+	/**
+	 * Static method for converting a string to a RequestType.
+	 * @param typeString
+	 * @return
+	 * @throws UnknownRequestException
+	 */
+	public static RequestType extractType(String typeString) throws UnknownRequestException{
+		
+		if (typeString.equals("HEAD")){
+			return RequestType.HEAD;
+		}else if(typeString.equals("GET")){
+			return RequestType.GET;
+		}else if(typeString.equals("POST")){
+			return RequestType.POST;
+		}else if(typeString.equals("PUT")){
+			return RequestType.PUT;
+		}else{
+			throw new UnknownRequestException(typeString);
+		}
+	}
+	
+	/**
+	 * Static method for converting a string to a HTTPVersion
+	 * @param versionString
+	 * @return
+	 * @throws UnknownHTTPVersionException
+	 */
+	public static HTTPVersion extractVersion(String versionString) throws UnknownHTTPVersionException{
+		if (versionString.equals("HTTP/1.0")){
+			return HTTPVersion.HTTP_1_0;
+		}else if(versionString.equals("HTTP/1.1")){
+			return HTTPVersion.HTTP_1_1;
+		}else{
+			throw new UnknownHTTPVersionException(versionString);
+		}
+	}
 
 }
