@@ -8,12 +8,10 @@ import java.io.*;
 public class Server {
 	
 	//fields
-    private int portNumber = 1997;
+    private final int portNumber;
     private ServerSocket serverSocket;
     private boolean isClosed = false;
     private ExecutorService threadPool;
-
-
 
 	
 	public Server(int port) {

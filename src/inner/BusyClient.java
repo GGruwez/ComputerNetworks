@@ -27,13 +27,14 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	public void run(){
 		
 		Socket socket = this.getClientSocket();
+		start();
 		
 		//initialize connection
 		try {
 			//reader
-			this.input = new BufferedInputStream(this.socket.getInputStream());
+			this.input = new BufferedInputStream(socket.getInputStream());
 			//writer
-			this.output = new DataOutputStream(this.socket.getOutputStream());	
+			this.output = new DataOutputStream(socket.getOutputStream());	
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -77,6 +78,18 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	
 	public DataOutputStream getOutput(){
 		return this.output;
+	}
+	
+	public Boolean isStopped(){
+		return this.isStopped;
+	}
+	
+	private void start(){
+		this.isStopped = false;
+	}
+	
+	public void stop(){
+		this.isStopped = true;
 	}
 	
 	
