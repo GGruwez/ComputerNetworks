@@ -10,8 +10,8 @@ import java.io.*;
  */
 public class BusyClient implements Runnable { //implements runnable nodig om te multithreaden
 
-	public Socket socket;
-	public Server server;
+	public final Socket socket;
+	public final Server server;
 	public BufferedInputStream input;
 	public DataOutputStream output;
 	public Boolean isStopped;
@@ -27,14 +27,14 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	public void run(){
 		
 		Socket socket = this.getClientSocket();
-		start();
+		startLoop();
 		
 		//initialize connection
 		try {
 			//reader
-			this.input = new BufferedInputStream(socket.getInputStream());
+			 setInput(new BufferedInputStream(socket.getInputStream()));
 			//writer
-			this.output = new DataOutputStream(socket.getOutputStream());	
+			setOutput(new DataOutputStream(socket.getOutputStream()));	
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -42,27 +42,33 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		} 
 		
 		//activate requestHandler - hoe hier precies de handler implementeren, requesthandler in deze class implementeren?
-		while(!isStopped){
+		RequestHandler handler = new RequestHandler(this);
+		while(!loopIsStopped()){
 			try {
-				new RequestHandler(this).handle();
+				if (getInput().available() > 0)handler.handle();
+				if (socket.isClosed() || getServer().getServerSocket().isClosed())stopLoop();
 			} catch (Exception e){
 				e.printStackTrace();
 			}
 		}
 		
 		//terminate service
-		try {
-	         this.socket.close();
-	         this.output.close();
-	         this.input.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		close();
 		
 	}
 	
-	
+	public void close(){
+		try{
+			getClientSocket().close();
+			stopLoop();
+			System.out.println("Closed a client connection");
+			Thread.currentThread().interrupt();
+			return;
+		}catch (IOException e){
+			System.out.println("Error closing socket");
+		}
+		
+	}
 	
 	public Socket getClientSocket(){
 		return this.socket;
@@ -76,19 +82,27 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		return this.input;
 	}
 	
+	public void setInput(BufferedInputStream input){
+		this.input = input;
+	}
+	
 	public DataOutputStream getOutput(){
 		return this.output;
 	}
 	
-	public Boolean isStopped(){
+	public void setOutput(DataOutputStream output){
+		this.output = output;
+	}
+	
+	public Boolean loopIsStopped(){
 		return this.isStopped;
 	}
 	
-	private void start(){
+	private void startLoop(){
 		this.isStopped = false;
 	}
 	
-	public void stop(){
+	public void stopLoop(){
 		this.isStopped = true;
 	}
 	

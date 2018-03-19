@@ -10,10 +10,11 @@ import inner.*;
 
 public class ServerMain {
 
-	public static void main(/*String[] args*/) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException, IOException {
+
+	public static void main(String[] args) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException, IOException {
 		
 		
-		Server server = new Server(1997);
+		Server server = new Server(2000);
 		server.start();
 		
 		System.out.println(Parser.parseRequestHeader("GET www.tinyos.net/ 80 HTTP/1.1"));
