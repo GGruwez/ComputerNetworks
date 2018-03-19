@@ -117,6 +117,7 @@ public class Client {
 		 * @return
 		 * @throws IOException
 		 */
+		//?
 		public static List<String> askForMessageContent() throws IOException{
 			BufferedReader contentReader = new BufferedReader(new InputStreamReader(System.in));
 			System.out.println("Insert request content and press ENTER for every line: " );

@@ -8,13 +8,13 @@ import java.io.*;
  * @author Gilles
  *
  */
-public class BusyClient implements Runnable {
+public class BusyClient implements Runnable { //implements runnable nodig om te multithreaden
 
-	private Socket socket;
-	private Server server;
-	private BufferedReader reader;
-	private PrintWriter writer; //enkel tekst
-	private Boolean isStopped;
+	public Socket socket;
+	public Server server;
+	public BufferedInputStream input;
+	public DataOutputStream output;
+	public Boolean isStopped;
 	
 	public BusyClient(Server server, Socket socket){
 		this.server = server;
@@ -28,25 +28,20 @@ public class BusyClient implements Runnable {
 		
 		//initialize connection
 		try {
-			InputStream input = socket.getInputStream();
-			OutputStream output = socket.getOutputStream();
-			this.reader = new BufferedReader(new InputStreamReader(input));
-			this.writer = new PrintWriter(output);
+			//reader
+			this.input = new BufferedInputStream(this.socket.getInputStream());
+			//writer
+			this.output = new DataOutputStream(this.socket.getOutputStream());	
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		
-		//activate requestHandler
+		//activate requestHandler - hoe hier precies de handler implementeren, requesthandler in deze class implementeren?
 		while(!isStopped){
-			/*
-			 * 1. get request type
-			 * 2. handle request
-			 */
 			try {
-				
-				
+				new RequestHandler(this);
 			} catch (Exception e){
 				e.printStackTrace();
 			}
@@ -54,9 +49,9 @@ public class BusyClient implements Runnable {
 		
 		//terminate service
 		try {
-			 writer.close();
-	         reader.close();
-	         socket.close();
+	         this.socket.close();
+	         this.output.close();
+	         this.input.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,20 +61,20 @@ public class BusyClient implements Runnable {
 	
 	
 	
-	private Socket getClientSocket(){
+	public Socket getClientSocket(){
 		return this.socket;
 	}
 	
-	private Server getServer(){
+	public Server getServer(){
 		return this.server;
 	}
 	
-	private BufferedReader getReader(){
-		return this.reader;
+	public BufferedInputStream getInput(){
+		return this.input;
 	}
 	
-	private PrintWriter getWriter(){
-		return this.writer;
+	public DataOutputStream getOutput(){
+		return this.output;
 	}
 	
 	
