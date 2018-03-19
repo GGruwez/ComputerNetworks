@@ -50,7 +50,9 @@ public class Server {
 	}
 	
 
-	
+	/**
+	 * This method closes our ServerSocket.
+	 */
 	public void closeServer(){
         close();
         try {
@@ -61,35 +63,63 @@ public class Server {
     }
 
     
-	
+	/**
+	 * Returns the port number of our server.
+	 * @return
+	 */
 	private int getPort(){
 		return this.portNumber;
 	}
 	
+	/**
+	 * Checks whether our server is closed.
+	 * @return
+	 */
 	public boolean isClosed(){
 		return this.isClosed;
 	}
 	
+	/**
+	 * Closes our server.
+	 */
 	public void close(){
 		this.isClosed = true;
 	}
 	
+	/**
+	 * Opens our server.
+	 */
 	private void open(){
 		this.isClosed = false;
 	}
 	
+	/**
+	 * Initializes the server's socket.
+	 * @param serverSocket
+	 */
 	private void setServerSocket(ServerSocket serverSocket){
 		this.serverSocket = serverSocket;
 	}
 	
+	/**
+	 * Returns server's socket.
+	 * @return
+	 */
 	public ServerSocket getServerSocket(){
 		return this.serverSocket;
 	}
 	
+	/**
+	 * Initializes threadpool.
+	 * @param threadPool
+	 */
 	private void setThreadPool(ExecutorService threadPool){
 		this.threadPool = threadPool;
 	}
 	
+	/**
+	 * Returns server's threadpool. 
+	 */
 	private ExecutorService getThreadPool(){
 		return this.threadPool;
 	}
