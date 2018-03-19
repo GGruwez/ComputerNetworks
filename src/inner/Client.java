@@ -159,7 +159,7 @@ public class Client {
 		 * @return
 		 */
 		public static String convertToReadableURL(String URL){
-			if (URL.contains("http://")){
+			if (URL.contains("http://") || URL.contains("https://")){
 				return URL;
 			}else{
 				return "http://" + URL;
