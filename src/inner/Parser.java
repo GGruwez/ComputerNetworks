@@ -95,7 +95,7 @@ public abstract class Parser {
 	public static int parseForContentLength(String lines){
 		for (String subline : lines.split("\n")){
 			if (subline.contains("Content-Length") || subline.contains("Content-length") || subline.contains("content-length")){
-				return Integer.parseInt(subline.split(":")[subline.split(":").length-1].replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", ""));
+				return Integer.parseInt(subline.split(":")[subline.split(":").length-1].replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", "").trim());
 			}
 		}
 		
@@ -291,6 +291,19 @@ public abstract class Parser {
 
 	public static String cleanString(String string){
 		return string.replaceAll("\n", "").replaceAll("\r", "").replaceAll(" ", "");
+	}
+	
+	public static String getFilename(String path){
+		if (path.equals("/"))return "";
+		
+		String[] splitString = path.split("/");
+		String filename = splitString[splitString.length-1];
+		return filename.substring(0, filename.lastIndexOf("."));
+		
+	}
+	
+	public static String getPathWithoutFilename(String path){
+		return path.substring(0, path.lastIndexOf("/")+1);
 	}
 
 

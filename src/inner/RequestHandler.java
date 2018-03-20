@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.io.*;
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ public class RequestHandler {
 	public BusyClient busyClient;
 	public static final String HOST = "localhost";
 	public static final String SERVER_LOCATION = "./src/serverFiles";
+	public static final String POST_PUT_FOLDER = "./src/postPut";
 	public static final String ROOT_FILE = "/index.html";
 
 	
@@ -115,7 +117,7 @@ public class RequestHandler {
 			int port = Parser.parseForPort(header);
 			Date date = Parser.parseForModifiedSince(header);
 			
-			executeRequest(requestObject, host.trim(), port, contentLength, date);
+			executeRequest(requestObject, host.trim(), port, message, date);
 			
 			System.out.println("HANDLING FINISHED");
 			
@@ -131,7 +133,7 @@ public class RequestHandler {
 		
 	}
 	
-	public void executeRequest(Request request, String host, int port, int contentLength, Date date) throws IOException, UnknownStatusCodeException{
+	public void executeRequest(Request request, String host, int port, String message, Date date) throws IOException, UnknownStatusCodeException{
 		if ((host.equals(getHost()) && (port == getBusyClient().getServer().getPort() || port == -1)) || request.getVersion() == HTTPVersion.HTTP_1_0 ){
 			if (request.getRequestType() == RequestType.GET){
 				System.out.println("EXECUTE GET REQUEST");
@@ -139,6 +141,12 @@ public class RequestHandler {
 			}else if (request.getRequestType() == RequestType.HEAD){
 				System.out.println("EXECUTE HEAD REQUEST");
 				executeHead(request, date);
+			}else if (request.getRequestType() == RequestType.PUT){
+				System.out.println("EXECUTE PUT REQUEST");
+				executePut(request, date, message);
+			}else if (request.getRequestType() == RequestType.POST){
+				System.out.println("EXECUTE POST REQUEST");
+				executePost(request, date, message);
 			}else{
 				respondWithError(400);
 			}
@@ -279,12 +287,70 @@ public class RequestHandler {
 		
 	}
 	
-	private void executePUT(){
+	private void executePut(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
 		
+		// Create new filename if filename was not given
+		String path = Parser.getPathWithoutFilename(request.getPath());
+		String filename = Parser.getFilename(request.getPath());
+		if (filename.equals(""))filename = "newFilename";
+		
+		
+		// Write new file
+		System.out.println(message);
+		DataOutputStream writer = new DataOutputStream(new FileOutputStream(new File(POST_PUT_FOLDER+path, filename + ".txt")));
+		writer.write(message.getBytes());
+        writer.flush();
+        writer.close();
+        
+        // Construct header
+        List<String> headers = new ArrayList<String>();
+        headers.add("Content-Location: " + path + filename + ".txt");
+        headers.add("Date: " + Parser.toHTTPDate(new Date()));
+        String header = constructHeader(StatusCode.ERROR200, headers);
+        
+        // Send response
+     	sendResponse(header.getBytes());
+        
 	}
 	
-	private void executePOST(){
+	private void executePost(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
+		// Create new filename if filename was not given
+		String path = Parser.getPathWithoutFilename(request.getPath());
+		String filename = Parser.getFilename(request.getPath());
+		if (filename.equals(""))filename = "newFilename";
 		
+		
+		// Append file or create new one
+		System.out.println(message);
+		File file = new File(POST_PUT_FOLDER+path, filename + ".txt");
+		if (!file.exists()){
+			// Create new file and write to it
+			DataOutputStream writer = null;
+			try{
+				writer = new DataOutputStream(new FileOutputStream(file));
+			}catch (IOException e){
+				e.printStackTrace();
+				respondWithError(404);
+				return;
+			}
+			
+			writer.write(message.getBytes());
+	        writer.flush();
+	        writer.close();
+		}else{
+			// Append existing file
+			Files.write(Paths.get(POST_PUT_FOLDER+path, filename + ".txt"), message.getBytes(), StandardOpenOption.APPEND);
+		}
+		
+        
+        // Construct header
+        List<String> headers = new ArrayList<String>();
+        headers.add("Content-Location: " + path + filename + ".txt");
+        headers.add("Date: " + Parser.toHTTPDate(new Date()));
+        String header = constructHeader(StatusCode.ERROR200, headers);
+        
+        // Send response
+     	sendResponse(header.getBytes());
 	}
 	
 	private void sendResponse(byte[] response) throws IOException{
@@ -295,9 +361,9 @@ public class RequestHandler {
 	}
 	
 	private String constructHeader(StatusCode status, List<String> headers) throws UnknownStatusCodeException{
-		String result = "HTTP/1.1 " + status.getStatusString() + "\n";
+		String result = "HTTP/1.1 " + status.getStatusString() + "\r\n";
 		for (String header : headers){
-			result += header + "\n";
+			result += header + "\r\n";
 		}
 		result += "\r\n\r\n";
 		return result;

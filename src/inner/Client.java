@@ -515,7 +515,6 @@ public class Client {
 	        
 	        // Create reader and writer
 	        DataOutputStream writer = new DataOutputStream(new FileOutputStream(new File(DOWNLOAD_DESTINATION, fileName + "." + extension)));
-	        
 	        BufferedInputStream reader = getSocketReader();
 	        
 	        byte[] bytes = new byte[2048];
