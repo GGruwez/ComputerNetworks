@@ -52,11 +52,13 @@ public class RequestHandler {
 			
 			System.out.println("HANDLING STARTED");
 			
+			
+			//start reading the request
 			while (readBytes < contentLength || !headerFound){
 				
 				
 				request = new byte[2048];
-				// Make sure that if the request comes in in different lines, 
+				// Make sure that if the request comes in in different lines (PUT, POST), 
 				// we wait properly before handling request
 				// available() checks the amount of bytes that can be read
 				if ((length = busyClient.getInput().available()) == 0){
@@ -76,7 +78,7 @@ public class RequestHandler {
 				offset = 0;
 				line = new String(request);
 				
-				
+				//end of header
 				index = line.indexOf("\r\n\r\n");
 				//if (index == -1) index = line.indexOf("\r\n");
 				if (index == -1 && line.replaceAll("\n", "%").replaceAll("\r", "/").trim().equals("/%")){
@@ -100,22 +102,26 @@ public class RequestHandler {
 				}
 			}
 			
-			
+			//make a request object with the information we found
 			Request requestObject = null;
 			try{
+				//returns the requestType of the given header
 				requestObject = Parser.parseRequestHeader(header, getBusyClient().getServer().getPort());
 			}catch(Exception e){
 				e.printStackTrace();
+				//bad request
 				respondWithError(400);
 				return;
 			}
 			
 			
 			// If the header request was valid, proceed with the handling
+			// parse for necessary information
 			String host = Parser.parseForHost(header);
 			int port = Parser.parseForPort(header);
 			Date date = Parser.parseForModifiedSince(header);
 			
+			//trim removes surrounding whitespace
 			executeRequest(requestObject, host.trim(), port, message, date);
 			
 			System.out.println("HANDLING FINISHED");
@@ -126,6 +132,7 @@ public class RequestHandler {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			//server error
 			respondWithError(500);
 			System.out.println("Server error");
 		}
@@ -133,7 +140,7 @@ public class RequestHandler {
 	}
 	
 	/**
-	 * Chooses appropriate executor.
+	 * Chooses the appropriate executor.
 	 */
 	public void executeRequest(Request request, String host, int port, String message, Date date) throws IOException, UnknownStatusCodeException{
 		if ((host.equals(getHost()) && (port == getBusyClient().getServer().getPort() || port == -1)) || request.getVersion() == HTTPVersion.HTTP_1_0 ){
@@ -150,6 +157,7 @@ public class RequestHandler {
 				System.out.println("EXECUTE POST REQUEST");
 				executePost(request, date, message);
 			}else{
+				//bad request
 				respondWithError(400);
 			}
 		}else{
@@ -163,6 +171,7 @@ public class RequestHandler {
 	 */
 	private void executeGet(Request request, Date date) throws IOException, UnknownStatusCodeException{
 		
+		//find the path of the requested file
 		String path = request.getPath();
 		if (path.equals("/"))path = ROOT_FILE;
 		
@@ -170,6 +179,7 @@ public class RequestHandler {
 		BufferedInputStream reader = null;
 		File file = null;
 		try{
+			//file pathname
 			file = new File(SERVER_LOCATION+path);
 			reader = new BufferedInputStream(new FileInputStream(file));
 		}catch (FileNotFoundException e){
@@ -178,10 +188,15 @@ public class RequestHandler {
 			return;
 		}
 		
-		// Check for modified-since
-		// Sample request headers for debugging: 
-		//		If-Modified-Since: Tue, 05 Jul 2016 23:27:52 GMT
-		//		If-Modified-Since: Tue, 05 Jul 2018 23:27:52 GMT
+		/*
+		 * The If-Modified-Since request HTTP header makes the request conditional: the server will 
+		 * send back the requested resource, with a 200 status, only if it has been last modified after the given date.
+		 *
+		 * Check for modified-since
+		 * Sample request headers for debugging: 
+		 *		If-Modified-Since: Tue, 05 Jul 2016 23:27:52 GMT
+		 *		If-Modified-Since: Tue, 05 Jul 2018 23:27:52 GMT
+		 */		
 		if (date != null){
 			Date lastModified = new Date(file.lastModified());
 			
@@ -241,6 +256,9 @@ public class RequestHandler {
 		
 	}
 	
+	/**
+	 * Executes a HEAD request - identical to GET without body. 
+	 */
 	private void executeHead(Request request, Date date) throws IOException, UnknownStatusCodeException{
 		String path = request.getPath();
 		if (path.equals("/"))path = ROOT_FILE;
@@ -292,6 +310,9 @@ public class RequestHandler {
 		
 	}
 	
+	/**
+	 * Executes a PUT request.
+	 */
 	private void executePut(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
 		
 		// Create new filename if filename was not given
@@ -318,6 +339,9 @@ public class RequestHandler {
         
 	}
 	
+	/**
+	 * Executes a POST request.
+	 */
 	private void executePost(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
 		// Create new filename if filename was not given
 		String path = Parser.getPathWithoutFilename(request.getPath());
@@ -358,6 +382,9 @@ public class RequestHandler {
      	sendResponse(header.getBytes());
 	}
 	
+	/**
+	 * Sends the server response to client.
+	 */
 	private void sendResponse(byte[] response) throws IOException{
 		
 		DataOutputStream writer = getBusyClient().getOutput();
@@ -365,6 +392,9 @@ public class RequestHandler {
 		
 	}
 	
+	/**
+	 * Constructs a header depending on the headers and the status code.
+	 */
 	private String constructHeader(StatusCode status, List<String> headers) throws UnknownStatusCodeException{
 		String result = "HTTP/1.1 " + status.getStatusString() + "\r\n";
 		for (String header : headers){
@@ -374,13 +404,16 @@ public class RequestHandler {
 		return result;
 	}
 	
-	/*
-	 * ERROR RESPONSES
+	/**
+	 *	Error response without header.
 	 */
 	private void respondWithError(int errorCode) throws UnknownStatusCodeException, IOException{
 		respondWithError(errorCode, "");
 	}
 	
+	/**
+	 * Error response with header.
+	 */
 	private void respondWithError(int errorCode, String header) throws UnknownStatusCodeException, IOException{
 		List<String> headers = new ArrayList<String>();
 		headers.add("Date: " + Parser.toHTTPDate(new Date()));
@@ -389,16 +422,22 @@ public class RequestHandler {
 		sendResponse(finalHeader.getBytes());
 	}
 	
+	/**
+	 * Get the connection this handler is working on.
+	 */
 	public BusyClient getBusyClient(){
 		return this.busyClient;
 	}
 	
+	/**
+	 * Get the host of this connection.
+	 */
 	private String getHost(){
 		return HOST;
 	}
 	
-	/*
-	 * HELP METHODS
+	/**
+	 * Merges two byte arrays.
 	 */
 	public static byte[] merge(byte[] array1, byte[] array2){
 		byte[] combined = new byte[array1.length + array2.length];

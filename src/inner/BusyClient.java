@@ -30,7 +30,7 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	}
 	
 	/**
-	 * Initializes the connection between server and client.
+	 * Runs the connection between server and client.
 	 */
 	@Override
 	public void run(){
@@ -61,7 +61,7 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 					handler.handle();
 					setLastRequest(System.currentTimeMillis());
 				}
-				//close if one of two sockets is closed
+				//close if one of two sockets is closed or if inactive for too long
 				if (socket.isClosed() || getServer().getServerSocket().isClosed() || (System.currentTimeMillis()-getLastRequest() > TIMEOUT_MS)){
 					System.out.println("Closed a client connection");
 					stopLoop();

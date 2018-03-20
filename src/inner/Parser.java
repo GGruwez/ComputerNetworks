@@ -284,7 +284,7 @@ public abstract class Parser {
 	}
 	
 	/**
-	 * Returns the request type for the so the requestHandler can generate the proper response. 
+	 * Returns the request type for the header so the requestHandler can generate the proper response. 
 	 * @return
 	 * @throws URISyntaxException 
 	 * @throws UnknownHTTPVersionException 
