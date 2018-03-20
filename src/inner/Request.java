@@ -128,6 +128,4 @@ public class Request {
 		private final HTTPVersion version;
 		private final RequestType type;
 		private List<String> content;
-		private int contentLength;
-		private String host;
 }

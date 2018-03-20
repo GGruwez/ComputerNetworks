@@ -1,17 +1,10 @@
 package inner;
 import java.net.*;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.SimpleDateFormat;
 import java.io.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +41,7 @@ public class RequestHandler {
 			//extract request header and body
 			byte[] request;
 			int index, offset, length;
-			String line, modifiedLine;
+			String line;
 			String header = "";
 			String message = "";
 			int contentLength = 0;
@@ -116,6 +109,7 @@ public class RequestHandler {
 				respondWithError(400);
 				return;
 			}
+			
 			
 			// If the header request was valid, proceed with the handling
 			String host = Parser.parseForHost(header);
@@ -241,7 +235,7 @@ public class RequestHandler {
 		
 		// Send response
 		sendResponse(response);
-		
+		System.out.println("Response was sent");
 		
 		reader.close();
 		

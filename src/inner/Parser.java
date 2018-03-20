@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -102,7 +101,7 @@ public abstract class Parser {
 			}
 		}
 		
-		return -1;
+		return 0;
 	}
 	
 	/**

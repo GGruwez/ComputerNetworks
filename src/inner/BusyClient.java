@@ -10,12 +10,13 @@ import java.io.*;
  */
 public class BusyClient implements Runnable { //implements runnable nodig om te multithreaden
 
-	public final Socket socket;
-	public final Server server;
-	public BufferedInputStream input;
-	public DataOutputStream output;
-	public Boolean isStopped;
-	public RequestHandler requestHandler;
+	private final Socket socket;
+	private final Server server;
+	private BufferedInputStream input;
+	private DataOutputStream output;
+	private Boolean isStopped;
+	private static final int TIMEOUT_MS = 10000;
+	private long lastRequest;
 	
 	/**
 	 * Construct a BusyClient. A BusyClient is defined by a server
@@ -26,7 +27,6 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 	public BusyClient(Server server, Socket socket){
 		this.server = server;
 		this.socket = socket;
-		//this.requestHandler = requestHandler;
 	}
 	
 	/**
@@ -57,9 +57,17 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		while(!loopIsStopped()){
 			try {
 				//only handle if more than 1 byte input is available
-				if (getInput().available() > 0)handler.handle();
+				if (getInput().available() > 0){
+					handler.handle();
+					setLastRequest(System.currentTimeMillis());
+				}
 				//close if one of two sockets is closed
-				if (socket.isClosed() || getServer().getServerSocket().isClosed())stopLoop();
+				if (socket.isClosed() || getServer().getServerSocket().isClosed() || (System.currentTimeMillis()-getLastRequest() > TIMEOUT_MS)){
+					System.out.println("Closed a client connection");
+					stopLoop();
+				}
+				
+				
 			} catch (Exception e){
 				System.out.println("Error during handling");
 				e.printStackTrace();
@@ -78,13 +86,26 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 		try{
 			getClientSocket().close();
 			stopLoop();
-			System.out.println("Closed a client connection");
 			Thread.currentThread().interrupt();
 			return;
 		}catch (IOException e){
 			System.out.println("Error closing socket");
 		}
 		
+	}
+	
+	/**
+	 * Returns the time of the last request
+	 */
+	public long getLastRequest(){
+		return this.lastRequest;
+	}
+	
+	/**
+	 * Sets the time of the last request
+	 */
+	public void setLastRequest(long lastRequest){
+		this.lastRequest = lastRequest;
 	}
 	
 	/**

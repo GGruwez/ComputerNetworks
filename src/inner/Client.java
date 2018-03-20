@@ -554,7 +554,6 @@ public class Client {
                 writer.flush();
                 
                 if (headerFound && headerOnly)break;
-	        	
 	        }
 	        
 	        // Parse for embedded objects if this is an html file
