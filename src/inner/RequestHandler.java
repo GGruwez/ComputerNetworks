@@ -22,6 +22,7 @@ public class RequestHandler {
 	public static final String SERVER_LOCATION = "./src/serverFiles";
 	public static final String POST_PUT_FOLDER = "./src/postPut";
 	public static final String ROOT_FILE = "/index.html";
+	public static final String ERROR_MESSAGE = "An error occurred: ";
 
 	/**
 	 * Constructor
@@ -173,7 +174,6 @@ public class RequestHandler {
 			file = new File(SERVER_LOCATION+path);
 			reader = new BufferedInputStream(new FileInputStream(file));
 		}catch (FileNotFoundException e){
-			e.getStackTrace();
 			respondWithError(404);
 			return;
 		}
@@ -382,11 +382,17 @@ public class RequestHandler {
 	}
 	
 	private void respondWithError(int errorCode, String header) throws UnknownStatusCodeException, IOException{
+		
+		String message = ERROR_MESSAGE + errorCode;
 		List<String> headers = new ArrayList<String>();
 		headers.add("Date: " + Parser.toHTTPDate(new Date()));
+		headers.add("Content-Length: " + message.getBytes().length);
+		headers.add("Content-Type: text/html");
 		if (header.length()>0)headers.add(header);
 		String finalHeader = constructHeader(Parser.extractStatusCode(errorCode), headers);
-		sendResponse(finalHeader.getBytes());
+		String response = finalHeader + message;
+		System.out.println(finalHeader);
+		sendResponse(response.getBytes());
 	}
 	
 	public BusyClient getBusyClient(){
