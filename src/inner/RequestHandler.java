@@ -20,9 +20,7 @@ import exceptions.UnknownRequestException;
 import exceptions.UnknownStatusCodeException;
 
 /**
- * Output: responses
- * @author Gilles
- *
+ * A requesthandler object is created for every busy client.
  */
 public class RequestHandler {
 	
@@ -32,11 +30,16 @@ public class RequestHandler {
 	public static final String POST_PUT_FOLDER = "./src/postPut";
 	public static final String ROOT_FILE = "/index.html";
 
-	
+	/**
+	 * Constructor
+	 */
 	public RequestHandler(BusyClient busyClient){
 		this.busyClient = busyClient;
 	}
 	
+	/**
+	 * Handles busyclient's request.
+	 */
 	public void handle() throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException, UnknownStatusCodeException, IOException {
 		
 		BusyClient busyClient = getBusyClient();
@@ -135,6 +138,9 @@ public class RequestHandler {
 		
 	}
 	
+	/**
+	 * Chooses appropriate executor.
+	 */
 	public void executeRequest(Request request, String host, int port, String message, Date date) throws IOException, UnknownStatusCodeException{
 		if ((host.equals(getHost()) && (port == getBusyClient().getServer().getPort() || port == -1)) || request.getVersion() == HTTPVersion.HTTP_1_0 ){
 			if (request.getRequestType() == RequestType.GET){
@@ -157,7 +163,10 @@ public class RequestHandler {
 		}
 		
 	}
-
+	
+	/**
+	 * Executes a GET request.
+	 */
 	private void executeGet(Request request, Date date) throws IOException, UnknownStatusCodeException{
 		
 		String path = request.getPath();

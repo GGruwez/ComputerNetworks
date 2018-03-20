@@ -2,10 +2,19 @@ package inner;
 
 import exceptions.UnknownStatusCodeException;
 
+/**
+ * An enumeration containing the different server responses.
+ * @author Gilles
+ *
+ */
 public enum StatusCode {
 
 		ERROR200, ERROR400, ERROR404, ERROR500, ERROR304;
-	
+		
+		/**
+		 * Returns the status string. 
+		 * 
+		 */
 		public String getStatusString() throws UnknownStatusCodeException{
 			if (this == StatusCode.ERROR200){
 				return "200 OK";
@@ -22,6 +31,9 @@ public enum StatusCode {
 			}
 		}
 		
+		/**
+		 * Returns status string.
+		 */
 		public int toInt() throws UnknownStatusCodeException{
 			if (this == StatusCode.ERROR200){
 				return 200;

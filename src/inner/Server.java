@@ -13,7 +13,9 @@ public class Server {
     private boolean isClosed;
     private ExecutorService threadPool;
 
-	
+	/**
+	 * Server constructor..
+	 */
 	public Server(int port) {
 		this.portNumber = port;	
 	}

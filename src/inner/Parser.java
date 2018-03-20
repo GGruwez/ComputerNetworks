@@ -24,7 +24,6 @@ import exceptions.UnknownStatusCodeException;
 
 /**
  * An abstract class containing all parsing-related methods
- * @author anthonyrathe
  *
  */
 public abstract class Parser {
@@ -41,6 +40,7 @@ public abstract class Parser {
 	public static List<String> findImageURLs(File file, String baseURL) throws IOException{
 		List<String> imageURLs = new ArrayList<String>();
 		
+		//simple jsoup parser implementation
 		Document doc = Jsoup.parse(file, "UTF-8", baseURL);
 		Elements images = doc.getElementsByTag("img");
 		for (Element image : images){
@@ -93,6 +93,9 @@ public abstract class Parser {
 	 * @return
 	 */
 	public static int parseForContentLength(String lines){
+		// \n = LF
+		// trim() : This method returns
+		//a copy of the string, with leading and trailing whitespace omitted.
 		for (String subline : lines.split("\n")){
 			if (subline.contains("Content-Length") || subline.contains("Content-length") || subline.contains("content-length")){
 				return Integer.parseInt(subline.split(":")[subline.split(":").length-1].replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", "").trim());
@@ -102,6 +105,10 @@ public abstract class Parser {
 		return -1;
 	}
 	
+	/**
+	 * Method that extracts the host in an HTTP header.
+	 * Returns nothing if none is found. 
+	 */
 	public static String parseForHost(String lines){
 		for (String subline : lines.split("\n")){
 			if (subline.split(":").length > 1 && (subline.contains("Host") || subline.contains("host"))){
@@ -112,6 +119,10 @@ public abstract class Parser {
 		return "";
 	}
 	
+	/**
+	 * This method extracts the port number in an HTTP header.
+	 * Returns -1 if none is found. 
+	 */
 	public static int parseForPort(String lines){
 		for (String subline : lines.split("\n")){
 			if (subline.contains("Host") || subline.contains("host")){
@@ -122,6 +133,9 @@ public abstract class Parser {
 		return -1;
 	}
 	
+	/**
+	 * Extract the modied since date from the HTTP header.
+	 */
 	public static Date parseForModifiedSince(String lines) throws ParseException{
 		for (String subline : lines.split("\n")){
 			if (subline.contains("If-Modified-Since") || subline.contains("If-modified-since") || subline.contains("If-Modified-since") || subline.contains("if-modified-since") || subline.contains("If-modified-Since")){
@@ -135,13 +149,16 @@ public abstract class Parser {
 		return null;
 	}
 	
+	/**
+	 * Return the date in a string.
+	 */
 	public static String toHTTPDate(Date date){
 		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 		return format.format(date);
 	}
 	
 	
-	/*
+	/**
 	 * Returns the extension of a file at given URL.
 	 * Returns an empty string if no extension was found.
 	 * @param URL
@@ -160,6 +177,9 @@ public abstract class Parser {
         return "";
 	}
 	
+	/**
+	 * Returns whether the given extension is text or image based.
+	 */
 	public static String extractFileType(String extension){
 		String[] text = {"html", "HTML", "php", "PHP", "txt", "TXT"};
 		String[] image = {"jpg", "gif", "png", "JPG", "PNG", "GIF"};
@@ -245,6 +265,9 @@ public abstract class Parser {
 		}
 	}
 	
+	/**
+	 * 
+	 */
 	public static StatusCode extractStatusCode(int code) throws UnknownStatusCodeException{
 		if (code == 200){
 			return StatusCode.ERROR200;
@@ -288,11 +311,17 @@ public abstract class Parser {
 		
 		
 	}
-
+	
+	/**
+	 * Removes all spaces, LF and CR.
+	 */
 	public static String cleanString(String string){
 		return string.replaceAll("\n", "").replaceAll("\r", "").replaceAll(" ", "");
 	}
 	
+	/**
+	 * Returns the file name of a given object.
+	 */
 	public static String getFilename(String path){
 		if (path.equals("/"))return "";
 		
@@ -302,6 +331,9 @@ public abstract class Parser {
 		
 	}
 	
+	/**
+	 * Removes the filename from a given path.
+	 */
 	public static String getPathWithoutFilename(String path){
 		return path.substring(0, path.lastIndexOf("/")+1);
 	}
