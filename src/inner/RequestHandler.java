@@ -60,7 +60,9 @@ public class RequestHandler {
 				
 				
 				request = new byte[2048];
-				// Make sure that if the request comes in in different lines, we wait properly
+				// Make sure that if the request comes in in different lines, 
+				// we wait properly before handling request
+				// available() checks the amount of bytes that can be read
 				if ((length = busyClient.getInput().available()) == 0){
 					if (!hasAppendedLine){
 						if (!headerFound){
