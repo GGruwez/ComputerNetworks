@@ -367,7 +367,7 @@ public class RequestHandler {
 		for (String header : headers){
 			result += header + "\r\n";
 		}
-		result += "\r\n\r\n";
+		result += "\r\n";
 		return result;
 	}
 	
