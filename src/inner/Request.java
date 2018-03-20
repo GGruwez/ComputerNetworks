@@ -63,19 +63,33 @@ public class Request {
 		 * GETTERS AND SETTERS
 		 */
 		
+		/**
+		 * Return the type of this request.
+		 */
 		public RequestType getRequestType(){
 			return this.type;
 		}
 		
+		/**
+		 * Returns the path of this request.
+		 * @return
+		 */
 		public String getPath(){
 			return this.path;
 		}
 		
-		
+		/**
+		 * Returns this request's HTTP version. 
+		 * @return
+		 */
 		public HTTPVersion getVersion(){
 			return this.version;
 		}
 		
+		/**
+		 * Returns this request's content.
+		 * @return
+		 */
 		public List<String> getContent(){
 			if (canHaveContent()){
 				return this.content;
@@ -85,6 +99,10 @@ public class Request {
 			
 		}
 		
+		/**
+		 * Sets the given content as content of this request.
+		 * @param content
+		 */
 		public void setContent(List<String> content){
 			if (canHaveContent())this.content = content;
 		}

@@ -34,9 +34,9 @@ public class Client {
 			//create socket for this client
 			Socket clientSocket = new Socket(URL.getHost(),port);
 
-			// Writer
+			// Writer - what server receives = output of client
             PrintStream serverInput = new PrintStream(clientSocket.getOutputStream(),true);
-            // Reader
+            // Reader - what client receives = output of server
             BufferedInputStream serverOutput = new BufferedInputStream(clientSocket.getInputStream());
             
             //initialize client's fields
@@ -62,9 +62,9 @@ public class Client {
 			
 			Socket clientSocket = new Socket(host, portInt);
 
-			// Writer
+			// Writer- what server receives = output of client
             PrintStream serverInput = new PrintStream(clientSocket.getOutputStream(),true);
-            // Reader
+            // Reader- what client receives = output of server
             BufferedInputStream serverOutput = new BufferedInputStream(clientSocket.getInputStream());
 		
             this.socket = clientSocket;
@@ -88,22 +88,38 @@ public class Client {
 		 * GETTERS
 		 */
 		
+		/**
+		 * Returns client socket.
+		 */
 		private Socket getSocket(){
 			return this.socket;
 		}
 		
+		/**
+		 * Returns client output aka server input.
+		 */
 		private PrintStream getSocketWriter(){
 			return this.socketWriter;
 		}
 		
+		/**
+		 * Returns client input aka server output.
+		 */
 		private BufferedInputStream getSocketReader(){
 			return this.socketReader;
 		}
 		
+		/**
+		 * Returns the host of the client. 
+		 */
 		public String getHost(){
 			return this.host;
 		}
 		
+		/**
+		 * Returns the port of client.
+		 * @return
+		 */
 		public int getPort(){
 			return this.port;
 		}
@@ -113,7 +129,7 @@ public class Client {
 		 */
 		
 		/**
-		 * Method that asks for multi-line user input.
+		 * Method that asks for multi-line user input, this method is used to ask for POST and PUT content. 
 		 * @return
 		 * @throws IOException
 		 */
@@ -190,13 +206,13 @@ public class Client {
 				throw new IOException("This is not a GET request");
 			}
 			
-			// Create filename based on the url
+			// Create filename (located in clientDownloads) based on the url
 			String fileName = "GET" + getHost() + request.getPath();
 			fileName = fileName.replace('.', '_').replace('/', '_');
 			
+			// Execute as an HTTP/1.1 request
 			if (request.getVersion() == HTTPVersion.HTTP_1_1){
-				// Execute as an HTTP/1.1 request
-
+				
 				// Send request
 				sendHTTP_1_1Request(request);
 				
@@ -377,26 +393,32 @@ public class Client {
 			if (request.getVersion() != HTTPVersion.HTTP_1_1){
 				throw new IOException("This is not an HTTP/1.1 request");
 			}
+			//get the request fields
 			String path = request.getPath();
 			String requestType = request.getRequestType().toString();
 			String version = request.getVersion().toString();
-			
 			String host = getHost();
 			
+			//get server input
 			PrintStream writer = getSocketWriter();
 			
 			List<String> content;
 			
+			//initial header of a HTTP request
 			String commandLine1 = requestType + " " + path + " " + version;
+			//second header
 			String commandLine2 = "Host: " + host;
+			//third header
 			String commandLine3 = "Connection: Keep-alive";
 	        writer.println(commandLine1);
 	        writer.println(commandLine2);
 	        writer.println(commandLine3);
 	        
+	        //retrieve the content
 	        if ((content = request.getContent()) != null){
 	        	
 	        	int contentLength = content.size();
+	        	//for each line an extra byte is added
 	        	for (String line : content){
 	        		contentLength += line.length();
 	        	}
@@ -405,10 +427,12 @@ public class Client {
 	        	writer.println("Content-Length: " + contentLength);
 	        }
 	        
+	        //print open line and flush writer
 	        writer.print("\r\n\r\n");
+	        
 	        writer.flush();
 
-	        
+	        //print content
 	        if ((content = request.getContent()) != null){
 	        	for (String line : content){
 	        		writer.println(line);

@@ -31,7 +31,6 @@ public class ClientMain {
 			exception.printStackTrace();
 		}
 		
-
 		
 	}
 }

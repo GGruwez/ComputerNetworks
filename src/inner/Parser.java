@@ -266,6 +266,7 @@ public abstract class Parser {
 	 * @return
 	 * @throws URISyntaxException 
 	 * @throws UnknownHTTPVersionException 
+	 * @throws IOException 
 	 */
 	public static Request parseRequestHeader(String header, int port) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException{
 		RequestType type;
@@ -284,8 +285,10 @@ public abstract class Parser {
 		version = extractVersion(cleanString(initialLine[2]));
 		
 		return new Request(type, path, port, version);
+		
+		
 	}
-	
+
 	public static String cleanString(String string){
 		return string.replaceAll("\n", "").replaceAll("\r", "").replaceAll(" ", "");
 	}
