@@ -202,7 +202,7 @@ public class Client {
 				
 				// Print and store server output
 				List<String> embeddedObjectsURLs = displayAndStoreResponse(fileName, RequestType.GET, !displayToTerminal, "http://" + getHost() + request.getPath(), false);
-		        
+				
 				// Fetch and store all embedded objects
 				for (String embeddedObjectURL : embeddedObjectsURLs){
 					
@@ -224,7 +224,7 @@ public class Client {
 				
 				// Print and store server output
 				List<String> embeddedObjectsURLs = displayAndStoreResponse(fileName, RequestType.GET, !displayToTerminal, "http://" + getHost() + request.getPath(), false);
-		        
+
 				// Fetch and store all embedded objects
 				for (String embeddedObjectURL : embeddedObjectsURLs){
 					// Always make a new connection for each embedded object
@@ -405,7 +405,7 @@ public class Client {
 	        	writer.println("Content-Length: " + contentLength);
 	        }
 	        
-	        writer.println();
+	        writer.print("\r\n\r\n");
 	        writer.flush();
 
 	        
@@ -454,7 +454,7 @@ public class Client {
 	        	writer.println("Content-Length: " + contentLength);
 	        }
 
-	        writer.println();
+	        writer.print("\r\n\r\n");
 	        writer.flush();
 	        
 	        if ((content = request.getContent()) != null){
@@ -533,12 +533,11 @@ public class Client {
                 if (headerFound && headerOnly)break;
 	        	
 	        }
-            
+	        
 	        // Parse for embedded objects if this is an html file
 	        List<String> imageURLs = new ArrayList<String>();
 	        if (extension.equals("html") || extension.equals("HTML")){
 	        	imageURLs = Parser.findImageURLs(new File(DOWNLOAD_DESTINATION, fileName + "." + extension), baseURL);
-	        	
 	        }
 
 	        writer.close();

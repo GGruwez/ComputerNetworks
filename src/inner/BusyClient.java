@@ -48,6 +48,7 @@ public class BusyClient implements Runnable { //implements runnable nodig om te 
 				if (getInput().available() > 0)handler.handle();
 				if (socket.isClosed() || getServer().getServerSocket().isClosed())stopLoop();
 			} catch (Exception e){
+				System.out.println("Error during handling");
 				e.printStackTrace();
 			}
 		}

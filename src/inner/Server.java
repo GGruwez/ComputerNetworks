@@ -62,7 +62,7 @@ public class Server {
 
     
 	
-	private int getPort(){
+	public int getPort(){
 		return this.portNumber;
 	}
 	

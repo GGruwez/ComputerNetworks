@@ -4,8 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,6 +20,7 @@ import org.jsoup.select.Elements;
 
 import exceptions.UnknownHTTPVersionException;
 import exceptions.UnknownRequestException;
+import exceptions.UnknownStatusCodeException;
 
 /**
  * An abstract class containing all parsing-related methods
@@ -72,6 +79,8 @@ public abstract class Parser {
 	 * @return
 	 */
 	public static String getPath(String url){
+		url = url.trim();
+		if (url.length() < 7 || (!url.substring(0,7).equals("http://") && !url.substring(0,7).equals("HTTP://"))) return url.substring(url.indexOf("/"));
 		String resultString = url.substring(7);
 		return resultString.substring(resultString.indexOf("/"));
 	}
@@ -83,8 +92,8 @@ public abstract class Parser {
 	 * @param line
 	 * @return
 	 */
-	public static int parseForContentLength(String line){
-		for (String subline : line.split("\n")){
+	public static int parseForContentLength(String lines){
+		for (String subline : lines.split("\n")){
 			if (subline.contains("Content-Length") || subline.contains("Content-length") || subline.contains("content-length")){
 				return Integer.parseInt(subline.split(":")[subline.split(":").length-1].replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", ""));
 			}
@@ -93,7 +102,43 @@ public abstract class Parser {
 		return -1;
 	}
 	
-
+	public static String parseForHost(String lines){
+		for (String subline : lines.split("\n")){
+			if (subline.split(":").length > 1 && (subline.contains("Host") || subline.contains("host"))){
+				return subline.split(":")[1].replaceAll(" ", "");
+			}
+		}
+		
+		return "";
+	}
+	
+	public static int parseForPort(String lines){
+		for (String subline : lines.split("\n")){
+			if (subline.contains("Host") || subline.contains("host")){
+				if (subline.split(":").length == 3)return Integer.parseInt(cleanString(subline.split(":")[2].replaceAll(" ", "")));
+			}
+		}
+		
+		return -1;
+	}
+	
+	public static Date parseForModifiedSince(String lines) throws ParseException{
+		for (String subline : lines.split("\n")){
+			if (subline.contains("If-Modified-Since") || subline.contains("If-modified-since") || subline.contains("If-Modified-since") || subline.contains("if-modified-since") || subline.contains("If-modified-Since")){
+				subline = subline.split(":")[1] + ":" + subline.split(":")[2] + ":" + subline.split(":")[3];
+				System.out.println(subline);
+				SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+				return format.parse(subline.trim());
+			}
+		}
+		
+		return null;
+	}
+	
+	public static String toHTTPDate(Date date){
+		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+		return format.format(date);
+	}
 	
 	
 	/*
@@ -105,6 +150,7 @@ public abstract class Parser {
 	public static String extractExtension(String URL){
 		int lastSlashIndex = URL.lastIndexOf("/");
         int urlLength = URL.length();
+
         if (URL.split("/").length > 0){
         	URL = URL.split("/")[URL.split("/").length-1];
 	        if (URL.split("\\.").length > 1 && lastSlashIndex < urlLength-1){
@@ -112,6 +158,18 @@ public abstract class Parser {
 	        }
         }
         return "";
+	}
+	
+	public static String extractFileType(String extension){
+		String[] text = {"html", "HTML", "php", "PHP", "txt", "TXT"};
+		String[] image = {"jpg", "gif", "png", "JPG", "PNG", "GIF"};
+		if (Arrays.asList(text).contains(extension)){
+			return "text";
+		}else if (Arrays.asList(image).contains(extension)){
+			return "image";
+		}else{
+			return "unknown";
+		}
 	}
 	
 	/**
@@ -187,40 +245,50 @@ public abstract class Parser {
 		}
 	}
 	
+	public static StatusCode extractStatusCode(int code) throws UnknownStatusCodeException{
+		if (code == 200){
+			return StatusCode.ERROR200;
+		}else if (code == 400){
+			return StatusCode.ERROR400;
+		}else if (code == 404){
+			return StatusCode.ERROR404;
+		}else if (code == 500){
+			return StatusCode.ERROR500;
+		}else if (code == 304){
+			return StatusCode.ERROR304;
+		}else{
+			throw new UnknownStatusCodeException(code);
+		}
+	}
+	
 	/**
 	 * Returns the request type for the so the requestHandler can generate the proper response. 
 	 * @return
 	 * @throws URISyntaxException 
 	 * @throws UnknownHTTPVersionException 
 	 */
-	public static Request parseRequestHeader(String header) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException{
-		RequestType type = null;
-		String path = null;
-		int port = 0;
-		HTTPVersion version = null;
+	public static Request parseRequestHeader(String header, int port) throws UnknownRequestException, URISyntaxException, UnknownHTTPVersionException{
+		RequestType type;
+		String path;
+		HTTPVersion version;
 		
 		//split header in lines
 		String[] lines = header.split("\n");
-		System.out.println(lines);
 		
 		//split initial line in strings
 		String[] initialLine = lines[0].split(" ");
-		System.out.println(initialLine);
 		
 		//get type, path, port, version
-		type = extractType(initialLine[0]);
-		path = getPath(initialLine[1]);
-		port = getPort(initialLine[2]);
-		version = extractVersion(initialLine[3]);
+		type = extractType(cleanString(initialLine[0]));
+		path = "http://localhost" + getPath(cleanString(initialLine[1]));
+		version = extractVersion(cleanString(initialLine[2]));
 		
 		return new Request(type, path, port, version);
 	}
 	
-	public int getPort(String port){
-		return Integer.parseInt(port);
+	public static String cleanString(String string){
+		return string.replaceAll("\n", "").replaceAll("\r", "").replaceAll(" ", "");
 	}
-	
-	
 
 
 }
