@@ -168,6 +168,8 @@ public class RequestHandler {
 	
 	/**
 	 * Executes a GET request.
+	 * @param request
+	 * @param date
 	 */
 	private void executeGet(Request request, Date date) throws IOException, UnknownStatusCodeException{
 		
@@ -258,6 +260,8 @@ public class RequestHandler {
 	
 	/**
 	 * Executes a HEAD request - identical to GET without body. 
+	 * @param request
+	 * @param date
 	 */
 	private void executeHead(Request request, Date date) throws IOException, UnknownStatusCodeException{
 		String path = request.getPath();
@@ -312,6 +316,10 @@ public class RequestHandler {
 	
 	/**
 	 * Executes a PUT request.
+	 * 
+	 * @param request
+	 * @param date
+	 * @param message
 	 */
 	private void executePut(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
 		
@@ -341,6 +349,10 @@ public class RequestHandler {
 	
 	/**
 	 * Executes a POST request.
+	 * 
+	 * @param request
+	 * @param date
+	 * @param message
 	 */
 	private void executePost(Request request, Date date, String message) throws IOException, UnknownStatusCodeException{
 		// Create new filename if filename was not given
